@@ -1,3 +1,10 @@
+# immApex VERSION 1.2.1
+* Update unit testing 
+* Removed src .o and .so files
+
+# immApex VERSION 1.0.6
+* Update unit testing and keras vignette check
+
 # immApex VERSION 1.0.5
 
 ## UNDERLYING CHANGES
