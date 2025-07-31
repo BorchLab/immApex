@@ -1,4 +1,4 @@
-#' Infer portions of the CDR Loop from Vgene data
+#' Infer CDR-loop segments from V-gene calls
 #' 
 #' Use this isolate sequences from the CDR loop using
 #' the V gene annotation. When there are multiple 
@@ -30,81 +30,91 @@
 #' @param input.data Data frame output of \code{\link{formatGenes}}
 #' @param reference IMGT reference sequences from \code{\link{getIMGT}}
 #' @param chain Sequence chain to access, like \strong{TRB} or \strong{IGH}
-#' @param technology The sequencing technology employed - \strong{TenX}, \strong{Adaptive}, 
-#' \strong{AIRR}, or \strong{Omniscope}
-#' @param sequence.type Type of sequence - \strong{aa} for amino acid or \strong{nt} for nucleotide
-#' @param sequences The specific regions of the CDR loop to get from the data, such as \strong{CDR1}. 
+#' @param technology The sequencing technology employed - \strong{TenX}, 
+#' \strong{Adaptive}, or \strong{AIRR}
+#' @param sequence.type Type of sequence - \strong{aa} for amino acid or 
+#' \strong{nt} for nucleotide
+#' @param sequences The specific regions of the CDR loop to get from the data, 
+#' such as \strong{CDR1}. 
+#' @param verbose Logical. If `TRUE` (default), prints a progress message.
 #'                             
 #' @importFrom stringr str_split
 #' 
 #' @export
 #' @return A data frame with the new columns of CDR sequences added.
-inferCDR <- function(input.data, 
-                     reference = NULL,
-                     chain = "TRB", 
-                     technology = NULL, 
-                     sequence.type = "aa",
-                     sequences = c("CDR1", "CDR2")) {
+inferCDR <- function(input.data,
+                     reference,
+                     chain       = "TRB",
+                     technology  = c("TenX", "AIRR", "Adaptive", "Omniscope"),
+                     sequence.type = c("aa", "nt"),
+                     sequences   = c("CDR1", "CDR2"),
+                     verbose     = TRUE) {
   
-  region <- "v"
-  if(is.null(reference) || "v" %!in% reference[["misc"]][["region"]]) {
-    stop("Please provide a list of V gene reference sequence using 'get.IMGT()'.")
+  # Preflight checks-----------------------------------------------------------
+  sequence.type <- match.arg(sequence.type)
+  technology    <- match.arg(technology)
+  
+  if (is.null(reference) ||
+      !"v" %in% reference[["misc"]][["region"]])
+    stop("`reference` must be a V-gene list from getIMGT().")
+  
+  if (reference[["misc"]][["sequence.type"]] != sequence.type)
+    stop("`sequence.type` mismatch with supplied reference.")
+  
+  unknown_regions <- setdiff(sequences, names(.sequence.positions))
+  if (length(unknown_regions))
+    stop("Unknown regions: ", paste(unknown_regions, collapse = ", "))
+  
+  # Determine V-gene column ---------------------------------------------------
+  v.col <- .get_v_column(input.data, technology)
+  
+  # Build region positions ----------------------------------------------------
+  pos_idx <- .sequence.positions[sequences]
+  if (sequence.type == "nt") {
+    pos_idx <- lapply(pos_idx, function(x) {
+      aa_start <- min(x)
+      aa_end <- max(x)
+      nt_start <- (aa_start - 1L) * 3L + 1L
+      nt_end <- aa_end * 3L
+      seq.int(nt_start, nt_end)
+    })
   }
   
-  if(reference[["misc"]][["sequence.type"]] != sequence.type) {
-    stop("Please check if the reference provided matches the sequence.type selected.")
+  # Build a lookup table ------------------------------------------------------
+  if (verbose) message("Building V-gene / CDR map...")
+  
+  ref_seqs <- reference[["sequences"]]
+  ref_names <- names(ref_seqs)
+  
+  extract_one <- function(seq, idx) substring(seq, min(idx), max(idx))
+  
+  cdr_map <- lapply(pos_idx, function(idx) {
+    vapply(ref_seqs, extract_one, idx = idx, FUN.VALUE = character(1L))
+  })
+  cdr_df <- data.frame(v_IMGT = ref_names,
+                       do.call(cbind, cdr_map),
+                       row.names = NULL,
+                       check.names = FALSE,
+                       stringsAsFactors = FALSE)
+  names(cdr_df)[-1] <- paste0(sequences, "_IMGT")
+  
+  # Splice into input.data via match ------------------------------------------
+  key <- .match.gene(input.data[[v.col]], cdr_df$v_IMGT)
+
+  for (j in seq_along(sequences)) {
+    new_col <- paste0(sequences[j], "_IMGT")
+    input.data[[new_col]] <- cdr_df[[new_col]][key]
   }
   
-  if(technology %!in% c("TenX", "AIRR", "Adaptive", "Omniscope")) {
-      stop("Please select a technology in the following category: 'TenX', 'AIRR', 'Adaptive', 'Omniscope'")
+  if (verbose) {
+    miss <- sum(is.na(key))
+    if (miss)
+      message("Warning:", miss, "V genes not found in reference; CDRs set to NA.\n")
   }
   
-  if ("v_IMGT" %!in% colnames(input.data)) {
-    warning("No output from 'format.genes()' detecting, proceeding with gene nomenclature that may result in NAs.")
-    if(technology %in% c("TenX","Adaptive")) {
-      genes.updated <- paste0(region, "_gene")
-      if(any(genes.updated %!in% colnames(input.data))) {
-        genes.updated <- paste0(region, "GeneName")
-        input.data[,genes.updated][is.na(input.data[,genes.updated])] <- str_split(input.data[,"vGeneNameTies"][is.na(input.data[,genes.updated])], "[,]", simplify = TRUE)[,1]
-      }
-    } else if (technology %in% c("AIRR", "Omniscope")) {
-      genes.updated <- paste0(region, "_call")
-    }
-  } else {
-    v.col <- "v_IMGT"
-  }
-  
-  sequence.pos <- .sequence.positions[grep(paste0(sequences, collapse = "|"), names(.sequence.positions))]
-  if(sequence.type == "nt") {
-    lapply(sequence.pos, function(x) {
-        start <- min(x*3)
-        end <- max(x*3) + 3
-        seq(start, end)
-    }) -> sequence.pos
-  }
-  
-  v.genes <- unique(input.data[,v.col])
-  lapply(seq_len(length(v.genes)), function(x) {
-    ref.pos <- which(names(reference[["sequences"]]) == v.genes[x])
-    if(length(ref.pos) == 0) {
-      ref.pos <- grep(v.genes[x], names(reference[["sequences"]]))[1]
-    }
-    if(is.na(ref.pos)) {
-      return(c(v.genes[x], rep(NA, length(sequences))))
-    } else {
-      lapply(sequence.pos, function(y) {
-         substring(reference[["sequences"]][[ref.pos]], min(y), max(y))
-      }) -> string.list
-      return(c(v.genes[x], unlist(string.list)))
-    }
-  }) -> cdr.sequences.list
-  
-  cdr.matrix <- do.call(rbind, cdr.sequences.list)
-  colnames(cdr.matrix) <- c("v_IMGT", paste0(sequences, "_IMGT"))
-  
-  input.data <- merge(input.data, cdr.matrix, by.x = v.col, by.y = 1)
-  return(input.data)
+  input.data
 }
+
 
 #CDR3 AA sequences by IMGT
 .sequence.positions <- list(

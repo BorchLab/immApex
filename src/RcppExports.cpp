@@ -10,53 +10,61 @@ Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
 Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
-// symmetric_deletion_lookup_cpp
-IntegerMatrix symmetric_deletion_lookup_cpp(std::vector<std::string> sequences, int threshold);
-RcppExport SEXP _immApex_symmetric_deletion_lookup_cpp(SEXP sequencesSEXP, SEXP thresholdSEXP) {
+// calculateMotif_cpp
+List calculateMotif_cpp(const CharacterVector& sequences, const IntegerVector& motif_lengths, const bool discontinuous, const char gap_char, const int nthreads_requested);
+RcppExport SEXP _immApex_calculateMotif_cpp(SEXP sequencesSEXP, SEXP motif_lengthsSEXP, SEXP discontinuousSEXP, SEXP gap_charSEXP, SEXP nthreads_requestedSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< std::vector<std::string> >::type sequences(sequencesSEXP);
-    Rcpp::traits::input_parameter< int >::type threshold(thresholdSEXP);
-    rcpp_result_gen = Rcpp::wrap(symmetric_deletion_lookup_cpp(sequences, threshold));
+    Rcpp::traits::input_parameter< const CharacterVector& >::type sequences(sequencesSEXP);
+    Rcpp::traits::input_parameter< const IntegerVector& >::type motif_lengths(motif_lengthsSEXP);
+    Rcpp::traits::input_parameter< const bool >::type discontinuous(discontinuousSEXP);
+    Rcpp::traits::input_parameter< const char >::type gap_char(gap_charSEXP);
+    Rcpp::traits::input_parameter< const int >::type nthreads_requested(nthreads_requestedSEXP);
+    rcpp_result_gen = Rcpp::wrap(calculateMotif_cpp(sequences, motif_lengths, discontinuous, gap_char, nthreads_requested));
     return rcpp_result_gen;
 END_RCPP
 }
-// edit_distance_threshold
-int edit_distance_threshold(std::string a, std::string b, int threshold);
-RcppExport SEXP _immApex_edit_distance_threshold(SEXP aSEXP, SEXP bSEXP, SEXP thresholdSEXP) {
+// encodeSequences_cpp
+Rcpp::List encodeSequences_cpp(const CharacterVector& sequences, std::string mode, const CharacterVector alphabet, Nullable<Rcpp::NumericMatrix> prop_mat_, const char pad_token, std::string summary, int max_len, int nthreads);
+RcppExport SEXP _immApex_encodeSequences_cpp(SEXP sequencesSEXP, SEXP modeSEXP, SEXP alphabetSEXP, SEXP prop_mat_SEXP, SEXP pad_tokenSEXP, SEXP summarySEXP, SEXP max_lenSEXP, SEXP nthreadsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< std::string >::type a(aSEXP);
-    Rcpp::traits::input_parameter< std::string >::type b(bSEXP);
-    Rcpp::traits::input_parameter< int >::type threshold(thresholdSEXP);
-    rcpp_result_gen = Rcpp::wrap(edit_distance_threshold(a, b, threshold));
+    Rcpp::traits::input_parameter< const CharacterVector& >::type sequences(sequencesSEXP);
+    Rcpp::traits::input_parameter< std::string >::type mode(modeSEXP);
+    Rcpp::traits::input_parameter< const CharacterVector >::type alphabet(alphabetSEXP);
+    Rcpp::traits::input_parameter< Nullable<Rcpp::NumericMatrix> >::type prop_mat_(prop_mat_SEXP);
+    Rcpp::traits::input_parameter< const char >::type pad_token(pad_tokenSEXP);
+    Rcpp::traits::input_parameter< std::string >::type summary(summarySEXP);
+    Rcpp::traits::input_parameter< int >::type max_len(max_lenSEXP);
+    Rcpp::traits::input_parameter< int >::type nthreads(nthreadsSEXP);
+    rcpp_result_gen = Rcpp::wrap(encodeSequences_cpp(sequences, mode, alphabet, prop_mat_, pad_token, summary, max_len, nthreads));
     return rcpp_result_gen;
 END_RCPP
 }
-// post_filter_candidates_seq
-DataFrame post_filter_candidates_seq(const IntegerMatrix& candidatePairs, const std::vector<std::string>& sequences, const std::vector<std::string>& vGenes, const std::vector<std::string>& jGenes, int threshold, bool filterV, bool filterJ);
-RcppExport SEXP _immApex_post_filter_candidates_seq(SEXP candidatePairsSEXP, SEXP sequencesSEXP, SEXP vGenesSEXP, SEXP jGenesSEXP, SEXP thresholdSEXP, SEXP filterVSEXP, SEXP filterJSEXP) {
+// fast_edge_list
+DataFrame fast_edge_list(CharacterVector seqs, double thresh, Nullable<CharacterVector> v_gene, Nullable<CharacterVector> j_gene, bool match_v, bool match_j, Nullable<CharacterVector> ids);
+RcppExport SEXP _immApex_fast_edge_list(SEXP seqsSEXP, SEXP threshSEXP, SEXP v_geneSEXP, SEXP j_geneSEXP, SEXP match_vSEXP, SEXP match_jSEXP, SEXP idsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const IntegerMatrix& >::type candidatePairs(candidatePairsSEXP);
-    Rcpp::traits::input_parameter< const std::vector<std::string>& >::type sequences(sequencesSEXP);
-    Rcpp::traits::input_parameter< const std::vector<std::string>& >::type vGenes(vGenesSEXP);
-    Rcpp::traits::input_parameter< const std::vector<std::string>& >::type jGenes(jGenesSEXP);
-    Rcpp::traits::input_parameter< int >::type threshold(thresholdSEXP);
-    Rcpp::traits::input_parameter< bool >::type filterV(filterVSEXP);
-    Rcpp::traits::input_parameter< bool >::type filterJ(filterJSEXP);
-    rcpp_result_gen = Rcpp::wrap(post_filter_candidates_seq(candidatePairs, sequences, vGenes, jGenes, threshold, filterV, filterJ));
+    Rcpp::traits::input_parameter< CharacterVector >::type seqs(seqsSEXP);
+    Rcpp::traits::input_parameter< double >::type thresh(threshSEXP);
+    Rcpp::traits::input_parameter< Nullable<CharacterVector> >::type v_gene(v_geneSEXP);
+    Rcpp::traits::input_parameter< Nullable<CharacterVector> >::type j_gene(j_geneSEXP);
+    Rcpp::traits::input_parameter< bool >::type match_v(match_vSEXP);
+    Rcpp::traits::input_parameter< bool >::type match_j(match_jSEXP);
+    Rcpp::traits::input_parameter< Nullable<CharacterVector> >::type ids(idsSEXP);
+    rcpp_result_gen = Rcpp::wrap(fast_edge_list(seqs, thresh, v_gene, j_gene, match_v, match_j, ids));
     return rcpp_result_gen;
 END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_immApex_symmetric_deletion_lookup_cpp", (DL_FUNC) &_immApex_symmetric_deletion_lookup_cpp, 2},
-    {"_immApex_edit_distance_threshold", (DL_FUNC) &_immApex_edit_distance_threshold, 3},
-    {"_immApex_post_filter_candidates_seq", (DL_FUNC) &_immApex_post_filter_candidates_seq, 7},
+    {"_immApex_calculateMotif_cpp", (DL_FUNC) &_immApex_calculateMotif_cpp, 5},
+    {"_immApex_encodeSequences_cpp", (DL_FUNC) &_immApex_encodeSequences_cpp, 8},
+    {"_immApex_fast_edge_list", (DL_FUNC) &_immApex_fast_edge_list, 7},
     {NULL, NULL, 0}
 };
 

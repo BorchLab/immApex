@@ -1,9 +1,9 @@
 Package: immApex
 Title: Tools for Adaptive Immune Receptor Sequence-Based Machine and Deep Learning
-Version: 1.3.0
+Version: 1.3.2
 Authors@R: c(
     person(given = "Nick", family = "Borcherding", role = c("aut", "cre"), email = "ncborch@gmail.com"))
-Description: A set of tools to build tensorflow/keras3-based models in R from amino acid and nucleotide sequences focusing on adaptive immune receptors. The package includes pre-processing of sequences, unifying gene nomenclature usage, encoding sequences, and combining models. This package will serve as the basis of future immune receptor sequence functions/packages/models compatible with the scRepertoire ecosystem.
+Description: A set of tools to for machine and deep learning in R from amino acid and nucleotide sequences focusing on adaptive immune receptors. The package includes pre-processing of sequences, unifying gene nomenclature usage, encoding sequences, and combining models. This package will serve as the basis of future immune receptor sequence functions/packages/models compatible with the scRepertoire ecosystem.
 License: MIT + file LICENSE 
 Encoding: UTF-8
 RoxygenNote: 7.3.2
@@ -13,35 +13,35 @@ Depends:
 Imports: 
         hash,
 	httr,
-        igraph,
-	keras3,
-	magrittr,
+	Matrix,
 	matrixStats,
 	methods,
-        Rcpp (>= 0.12.11),
-	reticulate,
+	Rcpp,
 	rvest,
 	SingleCellExperiment,
 	stats,
-	stringi,
 	stringr,
-	tensorflow,
         utils
 Suggests: 
 	BiocStyle,
+	dplyr,
 	ggraph,
 	ggplot2,
+	igraph,
 	knitr,
 	graph,
 	markdown,
+	Peptides,
+	randomForest,
 	rmarkdown, 
 	scRepertoire,
 	spelling,
         testthat,
 	tidygraph,
 	viridis
+SystemRequirements: Python (via basilisk)
 LinkingTo:
-        Rcpp
+	Rcpp
 VignetteBuilder: knitr
 Language: en-US
 URL: https://github.com/BorchLab/immApex/

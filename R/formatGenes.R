@@ -3,8 +3,7 @@
 #' This function will format the genes into a clean
 #' nomenclature using the IMGT conventions. 
 
-#' @param input.data Data frame of sequencing data or 
-#' scRepertoire outputs
+#' @param input.data Data frame of sequencing data or scRepertoire outputs
 #' @param region Sequence gene loci to access - "v", "d", "j", or "c"
 #' or a combination using c("v", "d", "j")
 #' @param technology The sequencing technology employed - \strong{'TenX'}, \strong{"Adaptive'}, or

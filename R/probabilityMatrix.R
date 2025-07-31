@@ -1,7 +1,19 @@
 #' Position Probability Matrix for Amino Acid or Nucleotide Sequences
-#' 
-#' Use this to generate a position-probability or weight matrix 
-#' for a set of given sequences. 
+#'
+#' Generates a position-probability (PPM) or position-weight (PWM) matrix
+#' from a set of biological sequences.
+#'
+#' @param input.sequences Character vector of sequences.
+#' @param max.length Integer; sequences will be right-padded to this length. 
+#'   If NULL (default), pads to the length of the longest sequence in the input.
+#' @param convert.PWM Logical; if TRUE, converts the matrix into a PWM.
+#' @param background.frequencies Named vector of background frequencies for PWM 
+#'   calculation. If NULL, a uniform distribution is assumed. Names must 
+#'   correspond to characters in `sequence.dictionary`.
+#' @param sequence.dictionary Character vector of residues to include in the matrix.
+#' @param pseudocount A small number added to raw counts for PWM calculation to 
+#'   avoid zero probabilities. Defaults to 1.
+#' @param padding.symbol Single character for right-padding. Must not be in `sequence.dictionary`.
 #' 
 #' @examples
 #' new.sequences <- generateSequences(prefix.motif = "CAS",
@@ -11,88 +23,82 @@
 #'                                    max.length = 16)
 #'                           
 #' PPM.matrix <- probabilityMatrix(new.sequences)
-#'                         
-#' @param input.sequences The amino acid or nucleotide sequences to use
-#' @param max.length Additional length to pad, NULL will pad sequences 
-#' to the max length of input.sequences
-#' @param convert.PWM Convert the matrix into a positional weight matrix 
-#' using log likelihood
-#' @param background.frequencies Provide amino acid or nucleotide frequencies
-#' for the positional weight matrix. If NULL, assumes uniform likelihood.
-#' @param sequence.dictionary The letters to use in sequence generation 
-#' (default are all amino acids)
-#' @param padding.symbol Symbol to use for padding at the end of sequences
-#' @param verbose Print messages corresponding to the processing step
-#' 
-#' @importFrom stats median
-#' 
+#'
 #' @export
-#' @return A matrix with position specific probabilities or weights
-probabilityMatrix <- function(input.sequences, 
+#' @return A matrix with position-specific probabilities (PPM) or weights (PWM).
+probabilityMatrix <- function(input.sequences,
                               max.length = NULL,
                               convert.PWM = FALSE,
                               background.frequencies = NULL,
                               sequence.dictionary = amino.acids,
-                              padding.symbol = ".", 
-                              verbose = TRUE) {
-  sequence.dictionary <- c(sequence.dictionary, padding.symbol)
-  if(!is.null(background.frequencies)) {
-    if(length(background.frequencies) != length(sequence.dictionary)-1) {
-      stop("Please ensure the background.frequencies match the length of the sequence.dictionary")
-    }
-    #Adding a frequency for padded values
-    background.frequencies <- c(background.frequencies, median(background.frequencies))
-    names(background.frequencies) <- sequence.dictionary
+                              pseudocount = 1,
+                              padding.symbol = ".") {
+  
+  #  1. Preflight Checks & Setup --------------------------------------------
+  if (padding.symbol %in% sequence.dictionary) {
+    stop("`padding.symbol` cannot be present in `sequence.dictionary`.")
+  }
+  if (length(input.sequences) == 0) {
+    return(matrix(0, nrow = length(sequence.dictionary), ncol = 0, 
+                  dimnames = list(sequence.dictionary, NULL)))
   }
   
-  
-  if(is.null(max.length)) {
+  # Determine padding length
+  if (is.null(max.length)) {
     max.length <- max(nchar(input.sequences))
   }
-  if(verbose){
-    message("Padding sequences...")
-  }
-  padded_sequences <- .padded.strings(strings = input.sequences, 
-                                      max.length = max.length,
-                                      padded.token = padding.symbol,
-                                      concatenate = TRUE)
-  if(verbose) {
-    message("Calculating Positional Probabilites for sequences...")
-  }
-  # Initialize the PSSM matrix with zeros
-  position_matrix <- matrix(0, nrow = length(sequence.dictionary), ncol = max.length)
-  rownames(position_matrix) <- sequence.dictionary
   
-  # Convert sequences to a matrix
-  sequence_matrix <- do.call(rbind, strsplit(unlist(padded_sequences), split = ""))
+  # 2. Pad Sequences 
+  padded_sequences <- .padded.strings(input.sequences, 
+                                      max.length = max.length, 
+                                      pad = ".", collapse = TRUE)
+  sequence_matrix <- do.call(rbind, strsplit(padded_sequences, ""))
   
-  # Count occurrences of each letter at each position using vectorized operations
+  # 3. Count Occurrences 
+  count_matrix <- matrix(0, nrow = length(sequence.dictionary), ncol = max.length)
+  rownames(count_matrix) <- sequence.dictionary
+  colnames(count_matrix) <- paste0("Pos.", seq_len(max.length))
+  
+  # Vectorized counting for each character
   for (letter in sequence.dictionary) {
-    position_matrix[letter, ] <- colSums(sequence_matrix == letter)
+    count_matrix[letter, ] <- colSums(sequence_matrix == letter)
   }
   
-  #Normalizing
-  if(convert.PWM) {
-    position_matrix <- position_matrix + 1
-    position_matrix<- position_matrix / (length(input.sequences) + length(sequence.dictionary) * 1)
-  } else {
-    position_matrix <- position_matrix / length(input.sequences)
-  }
+  #  4. PPM Calculation (Default) 
+  # Calculate column totals, excluding pads, for correct normalization
+  col_totals <- colSums(count_matrix)
   
-  colnames(position_matrix) <- paste0("Pos.", seq_len(max.length))
+  # Avoid division by zero for columns that are all padding
+  col_totals[col_totals == 0] <- 1 
   
-  if(convert.PWM) {
-    if(verbose) {
-      message("Converting to Liklihoods for a PWM...")
-    }
-    # Calculate log-likelihood PSSM
+  # Normalize to get probabilities
+  prob_matrix <- sweep(count_matrix, 2, col_totals, FUN = "/")
+  
+  # 5. PWM Conversion 
+  if (convert.PWM) {
+    # Validate and prepare background frequencies
     if (is.null(background.frequencies)) {
-      # If no background frequencies provided, assume uniform distribution
+      # Assume uniform background if not provided
       background.frequencies <- rep(1 / length(sequence.dictionary), length(sequence.dictionary))
       names(background.frequencies) <- sequence.dictionary
-    } 
-    position_matrix <- log2(position_matrix / background.frequencies[rownames(position_matrix)])
+    } else {
+      if (!setequal(names(background.frequencies), sequence.dictionary)) {
+        stop("Names of `background.frequencies` must match `sequence.dictionary`.")
+      }
+    }
+    
+    # Add pseudocounts to the *raw counts*
+    smoothed_counts <- count_matrix + pseudocount
+    
+    # Recalculate column totals with pseudocounts
+    smoothed_col_totals <- colSums(smoothed_counts)
+    
+    # Re-normalize to get smoothed probabilities
+    smoothed_probs <- sweep(smoothed_counts, 2, smoothed_col_totals, FUN = "/")
+    
+    # Calculate log-likelihood scores, ensuring background vector alignment
+    prob_matrix <- log2(smoothed_probs / background.frequencies[rownames(smoothed_probs)])
   }
   
-  return(position_matrix)
+  return(prob_matrix)
 }

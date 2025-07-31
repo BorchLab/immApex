@@ -1,47 +1,54 @@
-# test script for buildNetwork.R - testcases are NOT comprehensive!
-library(igraph)
+# test script for calculateMotif.R - testcases are NOT comprehensive!
 
-test_that("buildNetwork returns an igraph object and correct vertex count", {
-  seqs <- c("AAA", "AAB", "ABA", "ABB")
-  g <- buildNetwork(seqs, threshold = 1)
-  expect_true(inherits(g, "igraph"))
-  expect_equal(vcount(g), length(seqs))
+
+## helper: tiny sequence set
+seq3 <- c("AAA", "AAB", "AAC")
+
+test_that("plain vector input returns valid edge list", {
+  res <- buildNetwork(input.sequences = seq3, threshold = 1)
+  expect_s3_class(res, "data.frame")
+  expect_named(res, c("from", "to", "dist"))
+  expect_true(all(res$dist <= 1))
+  expect_setequal(unique(c(res$from, res$to)), c("1", "2", "3"))
 })
 
-test_that("Edge weights are computed correctly", {
-  # For these sequences, "AAA" and "AAB" differ by 1, so we expect an edge with weight 1.
-  seqs <- c("AAA", "AAB", "BBB")
-  g <- buildNetwork(seqs, threshold = 1)
-  # Check that at least one edge has weight 1.
-  edge_weights <- E(g)$weight
-  expect_true(any(edge_weights == 1))
-  # Also, check that all weights are <= threshold 
-  if (ecount(g) > 0) {
-    expect_true(all(edge_weights <= 1))
-  }
+
+toy <- data.frame(
+  cdr3   = c("CASSLG", "CASSLA", "CATSLA", "CARALA"),
+  v_call = c("TRBV12", "TRBV12", "TRBV20", "TRBV12"),
+  j_call = c("TRBJ2-7", "TRBJ2-7", "TRBJ2-3", "TRBJ2-7")
+)
+
+test_that("V filtering removes cross-V edges", {
+  no_v  <- buildNetwork(input.data = toy, seq_col = "cdr3", threshold = 2)
+  yes_v <- buildNetwork(input.data = toy, seq_col = "cdr3",
+                        threshold = 2, filter.v = TRUE)
+  expect_true(nrow(yes_v) < nrow(no_v))
+  expect_true(all(toy$v_call[as.integer(yes_v$from)] ==
+                    toy$v_call[as.integer(yes_v$to)]))
 })
 
-test_that("Function works with data frame input and retains gene annotations", {
-  df <- data.frame(
-    sequence = c("AAA", "AAB", "ABA", "ABB"),
-    v = c("V1", "V1", "V2", "V1"),
-    j = c("J1", "J1", "J2", "J1"),
-    stringsAsFactors = FALSE
-  )
-  # With filtering enabled, only pairs with matching v.gene and j.gene should be connected.
-  g <- buildNetwork(df, 
-                    threshold = 1, 
-                    filter.v = TRUE, 
-                    filter.j = TRUE)
-  expect_true(inherits(g, "igraph"))
-  # Check that vertex attributes match the input.
-  expect_equal(V(g)$sequence, df$sequence)
-  expect_equal(V(g)$v.gene, df[["v"]])
-  expect_equal(V(g)$j.gene, df[["j"]])
+test_that("sparse output is symmetric dgCMatrix", {
+  A <- buildNetwork(input.data = toy, seq_col = "cdr3",
+                    threshold = 2, output = "sparse")
+  expect_s4_class(A, "dgCMatrix")
+  expect_equal(dim(A)[1], dim(A)[2])        # symmetry
+  expect_equal(dimnames(A)[[1]], as.character(seq_len(nrow(toy))))
 })
 
-test_that("buildNetwork returns an empty edge set when no pairs qualify", {
-  seqs <- c("AAA", "AAB", "ABA")
-  g <- buildNetwork(seqs, threshold = 0)
-  expect_equal(ecount(g), 0)
+test_that("binary vs distance weights differ", {
+  Ab <- buildNetwork(toy, seq_col = "cdr3", threshold = 2,
+                     output = "sparse", weight = "binary")
+  Ad <- buildNetwork(toy, seq_col = "cdr3", threshold = 2,
+                     output = "sparse", weight = "dist")
+  expect_true(all(Ad@x >= Ab@x))      # binary = 1, dist ≥ 1
+})
+
+test_that("invalid threshold throws", {
+  expect_error(buildNetwork(input.sequences = seq3, threshold = 0), "threshold")
+  expect_error(buildNetwork(input.sequences = seq3, threshold = -1), "threshold")
+})
+
+test_that("ids length mismatch errors", {
+  expect_error(buildNetwork(input.sequences = seq3, ids = c("a", "b")), "ids")
 })

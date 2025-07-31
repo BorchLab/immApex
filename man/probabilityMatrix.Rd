@@ -10,35 +10,35 @@ probabilityMatrix(
   convert.PWM = FALSE,
   background.frequencies = NULL,
   sequence.dictionary = amino.acids,
-  padding.symbol = ".",
-  verbose = TRUE
+  pseudocount = 1,
+  padding.symbol = "."
 )
 }
 \arguments{
-\item{input.sequences}{The amino acid or nucleotide sequences to use}
+\item{input.sequences}{Character vector of sequences.}
 
-\item{max.length}{Additional length to pad, NULL will pad sequences 
-to the max length of input.sequences}
+\item{max.length}{Integer; sequences will be right-padded to this length. 
+If NULL (default), pads to the length of the longest sequence in the input.}
 
-\item{convert.PWM}{Convert the matrix into a positional weight matrix 
-using log likelihood}
+\item{convert.PWM}{Logical; if TRUE, converts the matrix into a PWM.}
 
-\item{background.frequencies}{Provide amino acid or nucleotide frequencies
-for the positional weight matrix. If NULL, assumes uniform likelihood.}
+\item{background.frequencies}{Named vector of background frequencies for PWM 
+calculation. If NULL, a uniform distribution is assumed. Names must 
+correspond to characters in `sequence.dictionary`.}
 
-\item{sequence.dictionary}{The letters to use in sequence generation 
-(default are all amino acids)}
+\item{sequence.dictionary}{Character vector of residues to include in the matrix.}
 
-\item{padding.symbol}{Symbol to use for padding at the end of sequences}
+\item{pseudocount}{A small number added to raw counts for PWM calculation to 
+avoid zero probabilities. Defaults to 1.}
 
-\item{verbose}{Print messages corresponding to the processing step}
+\item{padding.symbol}{Single character for right-padding. Must not be in `sequence.dictionary`.}
 }
 \value{
-A matrix with position specific probabilities or weights
+A matrix with position-specific probabilities (PPM) or weights (PWM).
 }
 \description{
-Use this to generate a position-probability or weight matrix 
-for a set of given sequences.
+Generates a position-probability (PPM) or position-weight (PWM) matrix
+from a set of biological sequences.
 }
 \examples{
 new.sequences <- generateSequences(prefix.motif = "CAS",
@@ -48,5 +48,5 @@ new.sequences <- generateSequences(prefix.motif = "CAS",
                                    max.length = 16)
                           
 PPM.matrix <- probabilityMatrix(new.sequences)
-                        
+
 }

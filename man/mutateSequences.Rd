@@ -6,7 +6,7 @@
 \usage{
 mutateSequences(
   input.sequences,
-  n.sequences = 1,
+  number.of.sequences = 1,
   mutation.rate = 0.01,
   position.start = NULL,
   position.end = NULL,
@@ -16,7 +16,7 @@ mutateSequences(
 \arguments{
 \item{input.sequences}{The amino acid or nucleotide sequences to use}
 
-\item{n.sequences}{The number of mutated sequences to return}
+\item{number.of.sequences}{The number of mutated sequences to return}
 
 \item{mutation.rate}{The rate of mutations to introduce into sequences}
 
@@ -33,9 +33,8 @@ mutateSequences(
 A vector of mutated sequences
 }
 \description{
-Use this to mutate or mask sequences
-for purposes of testing code, training models,
-or noise.
+Use this to mutate or mask sequences for purposes of testing code, 
+training models, or noise.
 }
 \examples{
 sequences <- generateSequences(prefix.motif = "CAS",
@@ -45,7 +44,7 @@ sequences <- generateSequences(prefix.motif = "CAS",
                                max.length = 16)
                                 
 mutated_sequences <- mutateSequences(sequences, 
-                                     n.sequence = 1,
+                                     number.of.sequences = 1,
                                      position.start = 3,
                                      position.end = 8)
 

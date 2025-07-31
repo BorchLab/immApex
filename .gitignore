@@ -1,3 +1,27 @@
+## ── Stupid Macs ───────────────────────────────────────────────────
 .DS_Store
-/doc/
-/Meta/
+
+## ── Binary objects built from C / C++ ─────────────────────────────
+src/*.o          # object files (Linux, macOS, Windows)
+src/*.so         # shared libs  (Linux)
+src/*.dylib      # shared libs  (macOS)
+src/*.dll        # shared libs  (Windows)
+src/*.a          # static libs
+src/*.gch        # pre-compiled headers
+
+## ── Debug info produced by Clang / GCC / lldb / gdb ───────────────
+src/*.dSYM/      # macOS .dSYM bundles
+src/*.gcda
+src/*.gcno
+
+## ── Temporary files editors may leave behind ──────────────────────
+*~
+*.swp
+*.sw?
+src/immApex.so
+src/immApex.so
+src/fastEditEdges.o
+src/RcppExports.o
+src/immApex.so
+src/immApex.so
+src/calculateMotif.o

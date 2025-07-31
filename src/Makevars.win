@@ -1,0 +1,11 @@
+## --- src/Makevars.win ------------------------------------------------------
+# Tell R to compile with C++17 features
+CXX_STD = CXX17
+
+# Add only essential, non-default compiler flags.
+# R's toolchain will provide its own default optimization and warning flags.
+# We only add the OpenMP flag, which is a specific requirement.
+PKG_CXXFLAGS = $(SHLIB_OPENMP_CXXFLAGS)
+
+# Set all package-specific linker flags directly.
+PKG_LIBS = $(SHLIB_OPENMP_CXXFLAGS)

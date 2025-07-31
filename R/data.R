@@ -1,29 +1,3 @@
-#' A list of amino acid properties
-#' 
-#' @description A list of amino acid properties that are
-#' used for \code{\link{propertyEncoder}} function.
-#' 
-#' This includes:
-#' \itemize{
-#'   \item{atchleyFactors} 
-#'   \item{crucianiProperties} 
-#'   \item{FASGAI} 
-#'   \item{kideraFactors} 
-#'   \item{MSWHIM}
-#'   \item{ProtFP} 
-#'   \item{stScales}
-#'   \item{tScales}
-#'   \item{VHSE} 
-#'   \item{zScales}
-#'   }
-#'  
-#' @docType data
-#' @usage data("immapex_AA.data")
-#' @name immapex_AA.data
-#' @return List of 10 amino acid properties for 20 amino acids
-#' 
-NULL
-
 #' A list of IMGT gene names by genes, loci, and species
 #' 
 #' @description A list of regularized gene nomenclature to use for 

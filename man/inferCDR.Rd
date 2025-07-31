@@ -2,15 +2,16 @@
 % Please edit documentation in R/inferCDR.R
 \name{inferCDR}
 \alias{inferCDR}
-\title{Infer portions of the CDR Loop from Vgene data}
+\title{Infer CDR-loop segments from V-gene calls}
 \usage{
 inferCDR(
   input.data,
-  reference = NULL,
+  reference,
   chain = "TRB",
-  technology = NULL,
-  sequence.type = "aa",
-  sequences = c("CDR1", "CDR2")
+  technology = c("TenX", "AIRR", "Adaptive", "Omniscope"),
+  sequence.type = c("aa", "nt"),
+  sequences = c("CDR1", "CDR2"),
+  verbose = TRUE
 )
 }
 \arguments{
@@ -20,12 +21,16 @@ inferCDR(
 
 \item{chain}{Sequence chain to access, like \strong{TRB} or \strong{IGH}}
 
-\item{technology}{The sequencing technology employed - \strong{TenX}, \strong{Adaptive}, 
-\strong{AIRR}, or \strong{Omniscope}}
+\item{technology}{The sequencing technology employed - \strong{TenX}, 
+\strong{Adaptive}, or \strong{AIRR}}
 
-\item{sequence.type}{Type of sequence - \strong{aa} for amino acid or \strong{nt} for nucleotide}
+\item{sequence.type}{Type of sequence - \strong{aa} for amino acid or 
+\strong{nt} for nucleotide}
 
-\item{sequences}{The specific regions of the CDR loop to get from the data, such as \strong{CDR1}.}
+\item{sequences}{The specific regions of the CDR loop to get from the data, 
+such as \strong{CDR1}.}
+
+\item{verbose}{Logical. If `TRUE` (default), prints a progress message.}
 }
 \value{
 A data frame with the new columns of CDR sequences added.

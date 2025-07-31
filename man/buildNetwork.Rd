@@ -2,100 +2,58 @@
 % Please edit documentation in R/buildNetwork.R
 \name{buildNetwork}
 \alias{buildNetwork}
-\title{Build Edit Distance Network Using Symmetric Deletion Lookup}
+\title{Build Edit Distance Network}
 \usage{
 buildNetwork(
-  input.data,
-  sequence.column = "sequence",
+  input.data = NULL,
+  input.sequences = NULL,
+  seq_col = NULL,
+  v_col = NULL,
+  j_col = NULL,
   threshold = 2,
   filter.v = FALSE,
   filter.j = FALSE,
-  technology = NULL,
-  simplify.format = TRUE,
-  simplify.families = TRUE
+  ids = NULL,
+  output = c("edges", "sparse"),
+  weight = c("dist", "binary")
 )
 }
 \arguments{
-\item{input.data}{A character vector of AIR sequences, or a data frame containing 
-sequence data.}
+\item{input.data}{`data.frame`/`tibble` with sequence & metadata
+(optional - omit if you supply `sequences` directly).}
 
-\item{sequence.column}{A character string specifying the name of the column in 
-\code{input.data} that contains the sequences. Default is \code{"sequence"}. 
-This parameter is ignored when \code{input.data} is a character vector.}
+\item{input.sequences}{Character vector of sequences **or** column name
+inside `input.data`. Ignored when `NULL` and `seq_col` is non-`NULL`.}
 
-\item{threshold}{An integer specifying the maximum allowed edit distance. Only 
-pairs of sequences with an edit distance less than or equal to this value 
-will be connected. Default is \code{2}.}
+\item{seq_col, v_col, j_col}{Column names to use when `input.data` is given. 
+By default the function looks for common AIRR names (`junction_aa`, 
+`cdr3`, `v_call`, `j_call`).}
 
-\item{filter.v}{Logical indicating whether to filter candidate pairs to only 
-those that have matching \code{v.gene} family annotations. Default is 
-\code{FALSE}. When \code{TRUE}, the input data frame must contain a column 
-with V gene annotations, either named \code{v.gene} or determined by 
-\code{.get.genes.updated}.}
+\item{threshold}{>= 1 for absolute distance **or** 0 < x <= 1 for relative.}
 
-\item{filter.j}{Logical indicating whether to filter candidate pairs to only 
-those that have matching \code{j.gene} family annotations. Default is 
-\code{FALSE}. When \code{TRUE}, the input data frame must contain a column 
-with J gene annotations, either named \code{j.gene} or determined by 
-\code{.get.genes.updated}.}
+\item{filter.v, filter.j}{Logical; require identical V/J when `TRUE`.}
 
-\item{technology}{The sequencing technology employed - \strong{'TenX'}, 
-\strong{'Adaptive'}, or \strong{'AIRR'}.}
+\item{ids}{Optional character labels; recycled from row-names if missing.}
 
-\item{simplify.format}{If applicable, remove the allelic designation (\strong{TRUE}) or
-retain all information (\strong{FALSE})}
+\item{output}{`"edges"` (default) or `"sparse"` - return an edge-list
+`data.frame` **or** a symmetric `Matrix::dgCMatrix` adjacency matrix.}
 
-\item{simplify.families}{If applicable, remove the hyphenated designation 
-(\strong{TRUE}) or retain all information (\strong{FALSE})}
+\item{weight}{`"dist"` (store the edit distance) **or** `"binary"`
+(all edges get weight 1). Ignored when `output = "edges"`.}
 }
 \value{
-An igraph object representing the AIR similarity network. Vertices 
-contain the original sequences (and gene annotations, if available), and each 
-edge has a \code{weight} attribute corresponding to the computed edit distance. 
-If no edges meet the threshold, an igraph object with only vertices is returned.
+edge-list `data.frame` **or** sparse adjacency `dgCMatrix`
 }
 \description{
-Constructs a weighted similarity network from biological sequences using a 
-symmetric deletion lookup strategy combined with a banded edit-distance 
-computation. The returned igraph object contains vertices representing the 
-input sequences and edges representing pairs of sequences whose edit distance 
-is less than or equal to the specified threshold. The edge attribute 
-\code{weight} stores the computed edit distance.
-}
-\details{
-This function supports both a character vector of sequences and a data frame.
-When provided a data frame, the user can specify the column containing sequences 
-using the \code{sequence.column} parameter. Additionally, candidate pairs can be 
-filtered by requiring matching \code{v.gene} and/or \code{j.gene} annotations 
-(see \code{filter.v} and \code{filter.j}). If filtering is enabled, the corresponding 
-gene annotation columns are required.
-
-
-The function first calls a C++ routine (via Rcpp) to perform a symmetric deletion 
-lookup, generating candidate pairs of sequences that might be within the specified 
-edit distance. It then uses a banded dynamic programming algorithm (also implemented 
-in C++) to compute the exact edit distance for each candidate pair. When using a 
-data frame input, the candidate pairs can be further filtered by requiring that 
-sequences have matching \code{v.gene} and/or \code{j.gene} values. Note that gene 
-filtering is only applied if the corresponding filtering flag is set to \code{TRUE}.
+Build Edit Distance Network
 }
 \examples{
-# Using a character vector of sequences:
-sequences <- c("CASSLGTDTQYF", "CASSPGTDTQYF", "CASSLGNDTQYF", "CASRLGNDTQYF")
-g <- buildNetwork(sequences, threshold = 2)
-plot(g)
+data(immapex_example.data)
 
-# Using a data frame with a custom sequence column:
-df <- data.frame(
-  mySeqs = c("CASSLGTDTQYF", "CASSPGTDTQYF", "CASSLGNDTQYF", "CASRLGNDTQYF"),
-  v = c("TRBV20", "TRBV20", "TRBV12", "TRBV20"),
-  j = c("TRBJ2-7", "TRBJ2-7", "TRBJ2-1", "TRBJ2-7")
-)
-g_df <- buildNetwork(df, 
-                     threshold = 2, 
-                     filter.v = TRUE, 
-                     filter.j = TRUE, 
-                     sequence.column = "mySeqs")
-plot(g_df)
+# Build Edge List
+edges <- buildNetwork(input.data = immapex_example.data[["AIRR"]],
+                      seq_col    = "junction_aa",
+                      threshold  = 0.9,     
+                      filter.v   = TRUE)
 
 }

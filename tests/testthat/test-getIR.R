@@ -1,6 +1,5 @@
 # test script for getIR.R - testcases are NOT comprehensive!
 
-test_that("getIR works", {
   test_that("Test for valid sequence type", {
     dummy_data <- data.frame(barcode = c("cell1", "cell2"),
                              CTaa = c("CASSLGG", "CASRLGG"),
@@ -10,7 +9,7 @@ test_that("getIR works", {
     expect_error(getIR(input.data = dummy_data, 
                        chains = "TRA",
                        sequence.type = "invalidType"),
-                 "Please select either 'aa' or 'nt' for sequence.type.")
+                 regexp = "should be one of")
   })
   
   test_that("Test for valid chain type", {
@@ -21,7 +20,7 @@ test_that("getIR works", {
     
     expect_error(getIR(input.data = dummy_data, 
                        chains = "invalidChain"),
-                 "Please select one of the following chains: 'TRA', 'TRB', 'TRG', 'TRD', 'Heavy', 'Light'")
+                 "`chains` must be one of: TRA, TRB, TRG, TRD, Heavy, Light")
   })
   
   test_that("Test for correct output type", {
@@ -32,7 +31,7 @@ test_that("getIR works", {
     
     result <- getIR(input.data = dummy_data, 
                     chains = "TRA")
-    expect_true(is.data.frame(result[[1]]))
+    expect_true(is.data.frame(result))
   })
   
   test_that("Test for correct column names", {
@@ -43,8 +42,8 @@ test_that("getIR works", {
     
     result <- getIR(input.data = dummy_data, 
                     chains = "TRA")
-    expected_colnames <- c("barcode", "cdr3_aa", "genes", "v", "d", "j", "c")
-    expect_equal(colnames(result[[1]]), expected_colnames)
+    expected_colnames <- c("cdr3_aa", "v", "d", "j", "c", "barcode", "chain")
+    expect_equal(colnames(result), expected_colnames)
   })
   
   test_that("Test for handling SingleCellExperiment object", {
@@ -58,7 +57,6 @@ test_that("getIR works", {
     
     result <- getIR(input.data = dummy_data, 
                     chains = "TRA")
-    expect_true(is.data.frame(result[[1]]))
+    expect_true(is.data.frame(result))
   })
   
-})

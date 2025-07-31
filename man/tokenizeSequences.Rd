@@ -11,6 +11,7 @@ tokenizeSequences(
   stop.token = "^",
   max.length = NULL,
   convert.to.matrix = TRUE,
+  padding.symbol = NULL,
   verbose = TRUE
 )
 }
@@ -28,14 +29,16 @@ to the max length of input.sequences}
 
 \item{convert.to.matrix}{Return a matrix (TRUE) or a vector (FALSE)}
 
+\item{padding.symbol}{Single character used for right-padding.}
+
 \item{verbose}{Print messages corresponding to the processing step}
 }
 \value{
-Tokenize sequences in a matrix or vector
+Integer matrix (rows = sequences, cols = positions) or list of vectors.
 }
 \description{
-Use this to transform amino acid sequences into 
-tokens in preparing for deep learning models.
+Use this to transform amino acid sequences into tokens in preparing for 
+deep learning models.
 }
 \examples{
 new.sequences <- generateSequences(prefix.motif = "CAS",

@@ -13,8 +13,7 @@ formatGenes(
 )
 }
 \arguments{
-\item{input.data}{Data frame of sequencing data or 
-scRepertoire outputs}
+\item{input.data}{Data frame of sequencing data or scRepertoire outputs}
 
 \item{region}{Sequence gene loci to access - "v", "d", "j", or "c"
 or a combination using c("v", "d", "j")}

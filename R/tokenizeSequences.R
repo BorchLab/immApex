@@ -1,7 +1,7 @@
 #' Generate Tokenized Sequences from Amino Acid String
 #' 
-#' Use this to transform amino acid sequences into 
-#' tokens in preparing for deep learning models. 
+#' Use this to transform amino acid sequences into tokens in preparing for 
+#' deep learning models. 
 #' 
 #' @examples
 #' new.sequences <- generateSequences(prefix.motif = "CAS",
@@ -10,7 +10,7 @@
 #'                                    min.length = 8,
 #'                                    max.length = 16)
 #'                           
-#'sequence.matrix <- tokenizeSequences(new.sequences, 
+#' sequence.matrix <- tokenizeSequences(new.sequences, 
 #'                                     add.startstop = TRUE,
 #'                                     start.token = "!",
 #'                                     stop.token = "^", 
@@ -23,59 +23,71 @@
 #' @param max.length Additional length to pad, NULL will pad sequences 
 #' to the max length of input.sequences
 #' @param convert.to.matrix Return a matrix (TRUE) or a vector (FALSE)
+#' @param padding.symbol Single character used for right-padding. 
 #' @param verbose Print messages corresponding to the processing step
 #' 
 #' @export
-#' @return Tokenize sequences in a matrix or vector
+#' @importFrom stats setNames
+#' @return Integer matrix (rows = sequences, cols = positions) or list of vectors.
 tokenizeSequences <- function(input.sequences, 
                               add.startstop = TRUE,
                               start.token = "!",
                               stop.token = "^", 
                               max.length = NULL,
                               convert.to.matrix = TRUE,
+                              padding.symbol = NULL,
                               verbose = TRUE) {
+  # Preflight checks-----------------------------------------------------------
+  if (!length(input.sequences))
+    return(if (convert.to.matrix) 
+      matrix(integer(0), nrow = 0, ncol = 0) else list())
   
-  if(add.startstop) {
-    char_set <- c(start.token,amino.acids, stop.token)
-    message("Adding start and stop tokens...")
-    sequences_updated <- vapply(input.sequences, 
-                                function(x) paste(start.token, x, stop.token, sep = ""), 
-                                FUN.VALUE = character(1))
+  # Build character set -------------------------------------------------------
+  if (add.startstop) {
+    sequences <- paste0(start.token, input.sequences, stop.token)
+    char_set  <- c(start.token, amino.acids, stop.token)
+    if (verbose) message("Added start/stop tokens...")
   } else {
-    char_set <- c(amino.acids)
-    sequences_updated <- input.sequences
+    sequences <- input.sequences
+    char_set  <- amino.acids
   }
+  if (any(nchar(char_set) != 1))
+    stop("All tokens in `char_set` must be single characters.")
   
-  # Create a mapping of amino acids to integers
+  char_set <- unique(char_set)                 # safeguard 
   char_to_int <- setNames(seq_along(char_set), char_set)
   
-  if(verbose) {
-    message("Tokenizing sequences...")
-  }
-  sequences_tokenized <- lapply(sequences_updated, function(seq) {
-    as.vector(char_to_int[strsplit(seq, "")[[1]]])
-  })
-  if(is.null(max.length)) {
-    max.length <- max(nchar(sequences_updated))
-  }
+  # Length bookkeeping --------------------------------------------------------
+  lens <- nchar(sequences)
+  if (is.null(max.length)) max.length <- max(lens)
+  if (max(lens) > max.length)
+    stop("`max.length` is smaller than the longest sequence.")
   
-  if(verbose){
-    message("Padding sequences...")
-  }
-  sequences_tokenized <- .padded.strings(sequences_tokenized, 
-                                         max.length,
-                                         padded.token = length(char_to_int) + 1,
-                                         concatenate = FALSE)
+  if (verbose) message("Padding Sequences...")
+  pad.id <- padding.symbol %||% (length(char_set) + 1L)
   
-  if(convert.to.matrix) {
-    if(verbose) {
-      message("Preparing a tokenized matrix...")
+  # Tokenise and pad in one sweep ---------------------------------------------
+  if (convert.to.matrix) {
+    if (verbose) message("Converting to Matrix...")
+    N <- length(sequences)
+    mat <- matrix(pad.id, nrow = N, ncol = max.length) # integer matrix
+    
+    for (i in seq_len(N)) {
+      ints <- char_to_int[strsplit(sequences[i], "", fixed = TRUE)[[1L]]]
+      if (anyNA(ints))
+        stop("Unknown character in sequence ", i, call. = FALSE)
+      mat[i, seq_along(ints)] <- ints
     }
-    sequences_matrix <- do.call(rbind, sequences_tokenized)
-    return(sequences_matrix)
-  } else {
-    return(sequences_tokenized)
+    return(mat)
   }
+  
+  ## list-mode ----------------------------------------------------------------
+  lapply(sequences, function(seq) {
+    ints <- char_to_int[strsplit(seq, "", fixed = TRUE)[[1L]]]
+    if (length(ints) < max.length)
+      ints <- c(ints, rep(pad.id, max.length - length(ints)))
+    ints
+  })
 }
 
 

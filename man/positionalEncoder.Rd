@@ -2,26 +2,56 @@
 % Please edit documentation in R/positionalEncoder.R
 \name{positionalEncoder}
 \alias{positionalEncoder}
-\title{Adding Position-Specific Information to Sequences}
+\title{Generate Sinusoidal Positional Encodings}
 \usage{
-positionalEncoder(number.of.sequences, latent.dims = NULL)
+positionalEncoder(
+  max.length = NULL,
+  d.model = NULL,
+  input.sequences = NULL,
+  base = 10000,
+  position.offset = 1L
+)
 }
 \arguments{
-\item{number.of.sequences}{The number of sequences to generate 
-position information}
+\item{max.length}{The maximum sequence length (number of positions) to encode.
+This is the primary way to specify the output size.}
 
-\item{latent.dims}{The number of latent dimensions.}
+\item{d.model}{The dimensionality of the embedding. Must be an even number.}
+
+\item{input.sequences}{Optional. A character vector of sequences. If provided,
+`max.length` is automatically determined from the longest sequence,
+unless `max.length` is also explicitly set to a larger value.}
+
+\item{base}{The base for the geometric progression of frequencies. The default
+is 10000, as used in the original paper.}
+
+\item{position.offset}{An integer offset for position numbering. Defaults to 1
+(1-based indexing common in R). Set to 0 for 0-based indexing.}
 }
 \value{
-A matrix of values
+A matrix of shape `max.length` x `d.model` containing the positional
+  encodings.
 }
 \description{
-Use this calculate positional encoding for recurrent
-neural networks using sin/cos and position information.
+Creates a matrix of sinusoidal positional encodings as described in the
+"Attention Is All You Need" paper. This provides a way to inject information
+about the relative or absolute position of tokens in a sequence.
 }
+\section{Details}{
+
+The implementation uses the standard formulas:
+`PE(pos, 2i) = sin(pos / base^(2i / d.model))`
+`PE(pos, 2i+1) = cos(pos / base^(2i / d.model))`
+where `pos` is the position, `i` is the dimension pair, `d.model` is the
+embedding dimension, and `base` is a user-definable base, typically 10000.
+}
+
 \examples{
-                         
-position.info <- positionalEncoder(number.of.sequences = 1000, 
-                                   latent.dims = 64)
-                        
+pos_encoding <- positionalEncoder(max.length = 50, 
+                                  d.model = 64)
+
+my_sequences <- c("SEQVENCE", "ANOTHERSEQ")
+pos_enc_auto <- positionalEncoder(input.sequences = my_sequences, 
+                                  d.model = 32)
+
 }

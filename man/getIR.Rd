@@ -4,7 +4,13 @@
 \alias{getIR}
 \title{Extract Immune Receptor Sequences}
 \usage{
-getIR(input.data, chains, sequence.type = "aa")
+getIR(
+  input.data,
+  chains,
+  sequence.type = c("aa", "nt"),
+  group.by = NULL,
+  as.list = FALSE
+)
 }
 \arguments{
 \item{input.data}{Single-cell object or the output of 
@@ -16,9 +22,18 @@ scRepertoire}
 
 \item{sequence.type}{Extract amino acid (\strong{aa}) or 
 nucleotide (\strong{nt}) sequences}
+
+\item{group.by}{Optional metadata column (e.g., \code{"sample.id"}) to 
+group and return results as a named list by that variable.}
+
+\item{as.list}{Logical; if \code{TRUE}, returns a list split by chain. 
+If \code{group.by} is also provided, returns a nested list Default is 
+\code{FALSE}.}
 }
 \value{
-A data frame of nucleotide or amino acid sequences
+A data frame, list of data frames, or nested list of immune 
+receptor sequences depending on \code{as.list} and \code{group.by}. Each 
+entry includes CDR3 sequence, V(D)J gene segments, and associated barcodes.
 }
 \description{
 Use this to extract immune receptor sequences from a Single-Cell 

@@ -2,12 +2,13 @@
 % Please edit documentation in R/sequenceDecoder.R
 \name{sequenceDecoder}
 \alias{sequenceDecoder}
-\title{One Hot Decoder from One Hot Encoded Matrix or 3D Array}
+\title{Decode Amino Acid or Nucleotide Sequences}
 \usage{
 sequenceDecoder(
-  sequence.matrix,
-  encoder = "onehotEncoder",
-  aa.method.to.use = NULL,
+  encoded.object,
+  mode = c("onehot", "property"),
+  property.set = NULL,
+  property.matrix = NULL,
   call.threshold = 0.5,
   sequence.dictionary = amino.acids,
   padding.symbol = ".",
@@ -15,47 +16,62 @@ sequenceDecoder(
 )
 }
 \arguments{
-\item{sequence.matrix}{The encoded sequences to decode in an array or matrix}
+\item{encoded.object}{A `list` object produced by `sequenceEncoder`, or a
+numeric `matrix` (flattened 2D) or `array` (3D cube) from it.}
 
-\item{encoder}{The method to prepare the sequencing information - 
-"onehotEncoder" or "propertyEncoder"}
+\item{mode}{The encoding mode used for decoding: `"onehot"` or `"property"`.
+This is typically inferred if `encoded.object` is a list from `sequenceEncoder`.}
 
-\item{aa.method.to.use}{The method or approach to use for the conversion:
-\itemize{
-  \item{Individual sets: atchleyFactors, crucianiProperties, FASGAI, kideraFactors, MSWHIM,
-  ProtFP, stScales, tScales, VHSE, zScales"}
-  \item{Multiple Sets: c("atchleyFactors", "VHSE") }
-}}
+\item{property.set}{For `mode = "property"`, a character vector of property
+names (e.g., `"atchleyFactors"`) that were used for the original encoding.
+See `?sequenceEncoder`. This is ignored if `property.matrix` is supplied.}
 
-\item{call.threshold}{The relative strictness of sequence calling with higher values being more
-stringent}
+\item{property.matrix}{For `mode = "property"`, the exact numeric matrix
+(with dimensions `20 x P`) that was used for encoding. This overrides
+`property.set`.}
 
-\item{sequence.dictionary}{The letters to use in sequence generation 
-(default are all amino acids)}
+\item{call.threshold}{A numeric confidence threshold for making a call.
+- In `"onehot"` mode, this is the minimum required value in the vector (e.g., `0.9`).
+- In `"property"` mode, this is the maximum allowable Euclidean distance.
+Positions with scores not meeting the threshold are assigned the `padding.symbol`.}
 
-\item{padding.symbol}{Symbol to use for padding at the end of sequences}
+\item{sequence.dictionary}{A character vector of the alphabet (e.g., amino acids).
+Must match the one used during encoding.}
 
-\item{remove.padding}{Remove the additional symbol from the end of decoded sequences}
+\item{padding.symbol}{The single character used to represent padding or
+low-confidence positions.}
+
+\item{remove.padding}{Logical. If `TRUE`, trailing padding symbols are
+removed from the end of the decoded sequences.}
 }
 \value{
-Decoded amino acid or nucleotide sequences
+A character vector of the decoded sequences.
 }
 \description{
-Use this to transform one hot encoded sequences back
-into amino acid or nucleotide sequences.
+Transforms one-hot or property-encoded sequences back into their original
+character representation. This function serves as the inverse to
+`sequenceEncoder`.
 }
 \examples{
-new.sequences <- generateSequences(prefix.motif = "CAS",
-                                   suffix.motif = "YF",
-                                   number.of.sequences = 100,
-                                   min.length = 8,
-                                   max.length = 16)
-if(reticulate::py_module_available("numpy")) {                         
-sequence.matrix <- onehotEncoder(new.sequences, 
-                                 convert.to.matrix = TRUE)
-                                 
-decoded.sequences <- sequenceDecoder(sequence.matrix,
-                                     padding.symbol = ".")
-}
+# Example sequences
+aa.sequences <- c("CAR", "YMD", "ACAC")
+
+# Encode the sequences
+encoded.onehot <- sequenceEncoder(aa.sequences, 
+                                  mode = "onehot")
+encoded.prop <- sequenceEncoder(aa.sequences, 
+                                mode = "property", 
+                                property.set = "atchleyFactors")
+
+# Decode the sequences
+# 1. Decode from the full list object
+decoded.1 <- sequenceDecoder(encoded.onehot, 
+                             mode = "onehot")
+
+# 2. Decode from just the 3D cube array
+decoded.2 <- sequenceDecoder(encoded.prop$cube,
+                             mode = "property",
+                             property.set = "atchleyFactors")
+
 
 }

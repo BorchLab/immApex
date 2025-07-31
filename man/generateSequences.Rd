@@ -10,30 +10,37 @@ generateSequences(
   number.of.sequences = 100,
   min.length = 1,
   max.length = 10,
+  verbose = TRUE,
   sequence.dictionary = amino.acids
 )
 }
 \arguments{
-\item{prefix.motif}{Add defined amino acid/nucleotide sequence to the start of the generated sequences.}
+\item{prefix.motif}{A defined amino acid/nucleotide sequence to add to the
+start of the generated sequences.}
 
-\item{suffix.motif}{Add defined amino acid/nucleotide sequence to the end of the generated sequences}
+\item{suffix.motif}{A defined amino acid/nucleotide sequence to add to the
+end of the generated sequences.}
 
-\item{number.of.sequences}{Number of sequences to generate}
+\item{number.of.sequences}{The number of sequences to generate.}
 
-\item{min.length}{Minimum length of the final sequence. The min.length may be adjusted if 
-incongruent with prefix.motif/suffix.motif lengths}
+\item{min.length}{The minimum length of the final sequence. If this value is
+too short to fit the motifs, it will be automatically increased.}
 
-\item{max.length}{Maximum length of the final sequence}
+\item{max.length}{The maximum length of the final sequence. If it is less
+than the final `min.length`, it will also be adjusted.}
 
-\item{sequence.dictionary}{The letters to use in sequence generation (default are all amino acids)}
+\item{verbose}{Logical. If TRUE, prints messages when arguments like
+`min.length` or `max.length` are automatically adjusted.}
+
+\item{sequence.dictionary}{A character vector of the letters to use in
+random sequence generation.}
 }
 \value{
-A vector of generated sequences
+A character vector of generated sequences.
 }
 \description{
-Use this to make synthetic amino acid sequences
-for purposes of testing code, training models,
-or noise.
+Use this to make synthetic amino acid sequences for purposes of testing code,
+training models, or providing noise.
 }
 \examples{
 generateSequences(prefix.motif = "CAS",
@@ -41,5 +48,5 @@ generateSequences(prefix.motif = "CAS",
                   number.of.sequences = 100,
                   min.length = 8,
                   max.length = 16)
-                        
+
 }
