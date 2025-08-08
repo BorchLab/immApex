@@ -1,4 +1,4 @@
-# immApex VERSION 1.3.4
+# immApex VERSION 1.3.5
 
 ## UNDERLYING CHANGES
 * Rebuilt ```propertyEncoder()``` and ```onehotEncoder()``` to use C++ backend with encodeSequences.cpp
