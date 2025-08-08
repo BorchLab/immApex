@@ -58,14 +58,31 @@ Parameters for ```getIMGT()```
 
 Here, we will use the ```getIMGT()``` function to get the amino acid sequences for the TRBV region to get all the sequences by V gene allele.
 
-```{r }
-TRBV_aa <- getIMGT(species = "human",
-                   chain = "TRB",
-                   frame = "inframe",
-                   region = "v",
-                   sequence.type = "aa") 
+```{r, eval=knitr::is_html_output()}
+# Function to check IMGT website availability
+is_imgt_available <- function() {
+  tryCatch({
+    r <- httr::HEAD("https://www.imgt.org", timeout(5))
+    httr::status_code(r) == 200
+  }, error = function(e) {
+    FALSE
+  })
+}
 
-TRBV_aa[[1]][1]
+# Run getIMGT only if the website is available
+if (is_imgt_available()) {
+  TRBV_aa <- getIMGT(species = "human",
+                     chain = "TRB",
+                     frame = "inframe",
+                     region = "v",
+                     sequence.type = "aa")
+
+  # Display first sequence as an example
+  TRBV_aa[[1]][1]
+} else {
+  # Display a message if IMGT is not available
+  "IMGT website is not accessible at the moment."
+}
 ```
 
 ## formatGenes
@@ -105,14 +122,19 @@ Parameters for ```inferCDR```
 * **sequences** The specific regions of the CDR loop to get from the data.
 
 ```{r }
-Adaptive_example <- inferCDR(Adaptive_example,
-                             chain = "TRB", 
-                             reference = TRBV_aa,
-                             technology = "Adaptive", 
-                             sequence.type = "aa",
-                             sequences = c("CDR1", "CDR2"))
-
-Adaptive_example[200:210,c("CDR1_IMGT", "CDR2_IMGT")]
+if (is_imgt_available()) {
+  Adaptive_example <- inferCDR(Adaptive_example,
+                               chain = "TRB", 
+                               reference = TRBV_aa,
+                               technology = "Adaptive", 
+                               sequence.type = "aa",
+                               sequences = c("CDR1", "CDR2"))
+  
+  Adaptive_example[200:210,c("CDR1_IMGT", "CDR2_IMGT")]
+} else {
+  # Display a message if IMGT is not available
+  "IMGT website is not accessible at the moment."
+}
 ```
 
 # Generating and Augmenting Sequence Sets
@@ -360,7 +382,7 @@ head(enc_onehot$flattened[, 1:10])
 
 ## propertyEncoder
 
-Instead of a binary vector, this method represents each amino acid using a set of continuous numerical values based on physicochemical properties (e.g., kideraFactors, FSGAI, etc). This can capture the biochemical similarity between amino acids. Access this method by setting **mode** = `"property"` or using the ```propertyEncoder()``` alias.
+Instead of a binary vector, this method represents each amino acid using a set of continuous numerical values based on physicochemical properties (e.g., kideraFactors, FASGAI, etc). This can capture the biochemical similarity between amino acids. Access this method by setting **mode** = `"property"` or using the ```propertyEncoder()``` alias.
 
 **Mode-Specific Arguments**:
 

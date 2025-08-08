@@ -1,4 +1,4 @@
-# immApex VERSION 1.3.2
+# immApex VERSION 1.3.4
 
 ## UNDERLYING CHANGES
 * Rebuilt ```propertyEncoder()``` and ```onehotEncoder()``` to use C++ backend with encodeSequences.cpp
@@ -11,6 +11,7 @@
 * Removed keras3/tensorflow suggests/dependencies
 * Removed baslisk environment, python no longer required
 * Updated C++ backend to C++17
+* robust checks before running `getIMGT()` for website functioning
 
 ## NEW FEATURES
 * ```calculateEntropy()``` added to calculate the positional entropy along a biological sequence
