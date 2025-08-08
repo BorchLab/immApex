@@ -42,6 +42,7 @@ V gene matches for a single gene, the first allelic
 sequence is used.
 }
 \examples{
+ \dontrun{
 # Getting the Sequence Reference
 data(immapex_example.data)
 TRBV_aa <- getIMGT(species = "human",
@@ -62,5 +63,6 @@ TenX_formatted <- inferCDR(TenX_formatted,
                            technology = "TenX", 
                            sequence.type = "aa",
                            sequences = c("CDR1", "CDR2"))
+}
                             
 }
