@@ -38,11 +38,13 @@ specific species and gene loci. More information on
 IMGT can be found at \href{https://www.imgt.org/}{imgt.org}.
 }
 \examples{
+\dontrun{
 TRBV_aa <- getIMGT(species = "human",
                    chain = "TRB",
                    frame = "inframe",
                    region = "v",
                    sequence.type = "aa", 
                    max.retries = 3) 
+}
 
 }

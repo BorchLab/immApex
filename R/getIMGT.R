@@ -5,12 +5,14 @@
 #' IMGT can be found at \href{https://www.imgt.org/}{imgt.org}.
 #'
 #' @examples
+#' \dontrun{
 #' TRBV_aa <- getIMGT(species = "human",
 #'                    chain = "TRB",
 #'                    frame = "inframe",
 #'                    region = "v",
 #'                    sequence.type = "aa", 
 #'                    max.retries = 3) 
+#' }
 #'
 #' @param species One or two-word common designation of species. 
 #' @param chain Sequence chain to access, e.g., \strong{TRB} or \strong{IGH}.
