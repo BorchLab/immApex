@@ -6,6 +6,7 @@
 #' sequence is used.
 #' 
 #' @examples
+#'  \dontrun{
 #' # Getting the Sequence Reference
 #' data(immapex_example.data)
 #' TRBV_aa <- getIMGT(species = "human",
@@ -26,6 +27,7 @@
 #'                            technology = "TenX", 
 #'                            sequence.type = "aa",
 #'                            sequences = c("CDR1", "CDR2"))
+#' }
 #'                             
 #' @param input.data Data frame output of \code{\link{formatGenes}}
 #' @param reference IMGT reference sequences from \code{\link{getIMGT}}
