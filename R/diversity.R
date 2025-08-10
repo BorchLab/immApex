@@ -1,6 +1,6 @@
 #' Shannon Diversity Index (Entropy)
 #'
-#' Calculates Shannon’s information entropy (often denoted *H′*) for a set
+#' Calculates Shannon’s information entropy (often denoted *H*) for a set
 #' of clone or sequence counts.
 #'
 #' \deqn{H' \;=\; -\sum_{i = 1}^{S} p_i \ln p_i}
@@ -11,7 +11,7 @@
 #' @param cnt Numeric vector of non-negative counts (one entry per clone/
 #'   residue/OTU).  Zero counts are ignored.
 #'
-#' @return A single numeric value (≥ 0).  When `cnt` contains exactly one
+#' @return A single numeric value (>= 0).  When `cnt` contains exactly one
 #'   positive entry the function returns `0`.
 #'
 #' @seealso [norm_entropy()], [inv_simpson()]
@@ -33,7 +33,7 @@ shannon_entropy <- function(cnt) {
 #' \deqn{1/D \;=\; \frac{1}{\sum_{i} p_i^{\,2}}}
 #'
 #' @inheritParams shannon_entropy
-#' @return Numeric value ≥ 1.  Equals 1 when all observations belong to a
+#' @return Numeric value >= 1.  Equals 1 when all observations belong to a
 #'   single category.
 #' @examples
 #' inv_simpson(c(10, 5, 1))
@@ -82,7 +82,7 @@ norm_entropy <- function(cnt) {
 
 #' Pielou’s Evenness
 #'
-#' Convenience wrapper for normalized Shannon entropy (*E* = *H′* / ln *S*).
+#' Convenience wrapper for normalized Shannon entropy (*E* = *H* / ln *S*).
 #'
 #' @inheritParams shannon_entropy
 #' @return Numeric evenness measure in [0, 1].
@@ -103,7 +103,7 @@ pielou_evenness <- function(cnt) norm_entropy(cnt)
 #' \deqn{^{1}D = e^{H'}}.
 #'
 #' @param q Numeric order of diversity.  Common values:
-#'   *0* (richness), *1* (exp(*H′*)), *2* (inverse Simpson).
+#'   *0* (richness), *1* (exp(*H*)), *2* (inverse Simpson).
 #'
 #' @return A **closure**: `hill_q(q)` returns a function that takes a
 #'   vector of counts and yields the corresponding ^qD.  The returned

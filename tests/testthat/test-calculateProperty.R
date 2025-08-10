@@ -39,7 +39,7 @@ test_that("custom summary function works (max)", {
   
   res_max <- calculateProperty(seqs, summary.fun = max_fun)
   
-  # should be element-wise ≥ mean and identical where only one residue
+  # should be element-wise >= mean and identical where only one residue
   res_mean <- calculateProperty(seqs, summary.fun = "mean")
   expect_true(all(res_max >= res_mean))
   expect_equal(res_max[ , "Pos.3"], res_mean[ , "Pos.3"])  # single residue (D)

@@ -13,7 +13,7 @@
 #'
 #' @param input.sequences Character vector of sequences (amino acid or 
 #' nucleotide)
-#' @param motif.lengths Integer vector of motif sizes (≥ 1). **Default:** `2:5`.
+#' @param motif.lengths Integer vector of motif sizes (>= 1). **Default:** `2:5`.
 #' @param min.depth Minimum count a motif must reach to be retained in the 
 #' output (`>= 1`). **Default:** `3`.
 #' @param discontinuous Logical; include single-gap motifs as well? 
