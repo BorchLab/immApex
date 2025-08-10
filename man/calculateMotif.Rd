@@ -17,7 +17,7 @@ calculateMotif(
 \item{input.sequences}{Character vector of sequences (amino acid or 
 nucleotide)}
 
-\item{motif.lengths}{Integer vector of motif sizes (≥ 1). **Default:** `2:5`.}
+\item{motif.lengths}{Integer vector of motif sizes (>= 1). **Default:** `2:5`.}
 
 \item{min.depth}{Minimum count a motif must reach to be retained in the 
 output (`>= 1`). **Default:** `3`.}

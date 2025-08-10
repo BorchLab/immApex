@@ -8,7 +8,7 @@ hill_q(q)
 }
 \arguments{
 \item{q}{Numeric order of diversity.  Common values:
-*0* (richness), *1* (exp(*H′*)), *2* (inverse Simpson).}
+*0* (richness), *1* (exp(*H*)), *2* (inverse Simpson).}
 }
 \value{
 A **closure**: `hill_q(q)` returns a function that takes a

@@ -11,11 +11,11 @@ shannon_entropy(cnt)
 residue/OTU).  Zero counts are ignored.}
 }
 \value{
-A single numeric value (≥ 0).  When `cnt` contains exactly one
+A single numeric value (>= 0).  When `cnt` contains exactly one
   positive entry the function returns `0`.
 }
 \description{
-Calculates Shannon’s information entropy (often denoted *H′*) for a set
+Calculates Shannon’s information entropy (often denoted *H*) for a set
 of clone or sequence counts.
 }
 \details{

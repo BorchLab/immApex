@@ -41,7 +41,7 @@ test_that("binary vs distance weights differ", {
                      output = "sparse", weight = "binary")
   Ad <- buildNetwork(toy, seq_col = "cdr3", threshold = 2,
                      output = "sparse", weight = "dist")
-  expect_true(all(Ad@x >= Ab@x))      # binary = 1, dist ≥ 1
+  expect_true(all(Ad@x >= Ab@x))      # binary = 1, dist >= 1
 })
 
 test_that("invalid threshold throws", {

@@ -14,7 +14,7 @@ residue/OTU).  Zero counts are ignored.}
 Numeric evenness measure in [0, 1].
 }
 \description{
-Convenience wrapper for normalized Shannon entropy (*E* = *H′* / ln *S*).
+Convenience wrapper for normalized Shannon entropy (*E* = *H* / ln *S*).
 }
 \examples{
 pielou_evenness(c(3, 3, 3))

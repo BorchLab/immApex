@@ -11,7 +11,7 @@ inv_simpson(cnt)
 residue/OTU).  Zero counts are ignored.}
 }
 \value{
-Numeric value ≥ 1.  Equals 1 when all observations belong to a
+Numeric value >= 1.  Equals 1 when all observations belong to a
   single category.
 }
 \description{
