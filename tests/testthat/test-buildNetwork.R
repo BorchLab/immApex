@@ -31,7 +31,7 @@ test_that("V filtering removes cross-V edges", {
 test_that("sparse output is symmetric dgCMatrix", {
   A <- buildNetwork(input.data = toy, seq_col = "cdr3",
                     threshold = 2, output = "sparse")
-  expect_s4_class(A, "dgCMatrix")
+  expect_s4_class(A, "dsCMatrix")
   expect_equal(dim(A)[1], dim(A)[2])        # symmetry
   expect_equal(dimnames(A)[[1]], as.character(seq_len(nrow(toy))))
 })

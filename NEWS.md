@@ -1,3 +1,8 @@
+# immApex VERSION 1.3.7
+
+## UNDERLYING CHANGES
+* Ensure `buildNetwork()` returns a symmetric distance matrix and drops nonstructural zeros
+
 # immApex VERSION 1.3.6
 
 ## UNDERLYING CHANGES
