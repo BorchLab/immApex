@@ -25,7 +25,7 @@
 #'                       filter.v   = TRUE)
 #'
 #' @return edge-list `data.frame` **or** sparse adjacency `dgCMatrix`
-#' @importFrom Matrix sparseMatrix
+#' @importFrom Matrix sparseMatrix drop0 forceSymmetric
 #' @export
 buildNetwork <- function(input.data        = NULL,
                          input.sequences   = NULL,
@@ -38,7 +38,8 @@ buildNetwork <- function(input.data        = NULL,
                          ids               = NULL,
                          output            = c("edges", "sparse"),
                          weight            = c("dist", "binary")) {
-  
+  #TODO Improve Branch-based LV Calculation in CPP
+  #TODO Presort groupings before passing to CPP 
   output <- match.arg(output)
   weight <- match.arg(weight)
   
@@ -93,7 +94,7 @@ buildNetwork <- function(input.data        = NULL,
   ##  4. Input sanity checks 
   if (length(threshold) != 1 || !is.numeric(threshold) || threshold <= 0)
     stop("`threshold` must be > 0 (integer or 0-1).")
-  if (threshold <= 1 && threshold <= 0)
+  if (threshold < 1 && threshold <= 0) 
     stop("Relative threshold must be 0 < x <= 1.")
   if (filter.v && is.null(v_vec))
     stop("`filter.v = TRUE` requires V gene information.")
@@ -126,13 +127,19 @@ buildNetwork <- function(input.data        = NULL,
   
   x <- if (weight == "binary") rep(1L, nrow(edge_df)) else edge_df$dist
   
-  A <- Matrix::sparseMatrix(
-    i = c(idx_from, idx_to),          
-    j = c(idx_to,   idx_from),
-    x = c(x,         x),
-    dims = c(length(all_ids), length(all_ids)),
-    dimnames = list(all_ids, all_ids)
-  )
+  # --- Sparse symmetric adjacency
+  idx_from <- match(edge_df$from, ids)
+  idx_to   <- match(edge_df$to,   ids)
+  x <- if (weight == "binary") rep(1, nrow(edge_df)) else edge_df$dist
+  
+  A <- Matrix::sparseMatrix(i = idx_from,
+                            j = idx_to,
+                            x = x,
+                            dims = c(length(ids), length(ids)),
+                            dimnames = list(ids, ids))
+  A <- Matrix::forceSymmetric(A, uplo = "U")
+  diag(A) <- 0
+  A <- Matrix::drop0(A)
   return(A)
 }
 
