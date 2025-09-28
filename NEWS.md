@@ -1,6 +1,11 @@
 # immApex VERSION 1.3.7
 
 ## UNDERLYING CHANGES
+* Ensure `buildNetwork()` returns a symmetric distance matrix and drops nonstructural zeros
+
+# immApex VERSION 1.3.6
+
+## UNDERLYING CHANGES
 * Rebuilt ```propertyEncoder()``` and ```onehotEncoder()``` to use C++ backend with encodeSequences.cpp
 * Rebuilt ```buildNetwork()``` via C++ integration (fastEditEdges.cpp)
 * Motif quantification in ```calculateMotif()``` use C++ (calculateMotif.cpp)
