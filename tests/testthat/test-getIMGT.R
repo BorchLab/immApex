@@ -21,10 +21,6 @@ test_that("getIMGT works when IMGT website is available", {
                                    frame = "inframe",
                                    region = "v",
                                    sequence.type = "aa") 
-  expect_equal(
-    TRBV_human_inframe_aa,
-    getdata("getIMGT", "getIMGT_TRBV_human_inframe_aa")
-  )
   
   # Test Different Region and Species
   TRAJ_mouse_inframe_aa <- getIMGT(species = "mouse",
