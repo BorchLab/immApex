@@ -1,6 +1,6 @@
 Package: immApex
 Title: Tools for Adaptive Immune Receptor Sequence-Based Machine and Deep Learning
-Version: 1.4.0
+Version: 1.5.0
 Authors@R: c(
     person(given = "Nick", family = "Borcherding", role = c("aut", "cre"), email = "ncborch@gmail.com"))
 Description: A set of tools to for machine and deep learning in R from amino acid and nucleotide sequences focusing on adaptive immune receptors. The package includes pre-processing of sequences, unifying gene nomenclature usage, encoding sequences, and combining models. This package will serve as the basis of future immune receptor sequence functions/packages/models compatible with the scRepertoire ecosystem.
