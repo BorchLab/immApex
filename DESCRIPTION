@@ -6,7 +6,7 @@ Authors@R: c(
 Description: A set of tools to for machine and deep learning in R from amino acid and nucleotide sequences focusing on adaptive immune receptors. The package includes pre-processing of sequences, unifying gene nomenclature usage, encoding sequences, and combining models. This package will serve as the basis of future immune receptor sequence functions/packages/models compatible with the scRepertoire ecosystem.
 License: MIT + file LICENSE 
 Encoding: UTF-8
-RoxygenNote: 7.3.2
+RoxygenNote: 7.3.3
 biocViews: Software, ImmunoOncology, SingleCell, Classification, Annotation, Sequencing, MotifAnnotation
 Depends: 
 	R (>= 4.3.0)

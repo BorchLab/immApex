@@ -306,7 +306,7 @@ pwm.matrix <- probabilityMatrix(sequences,
 head(pwm.matrix)
 ```
 
-## adjacencyMatrix and buildNetwork
+## adjacencyMatrix
 
 These functions help analyze relationships between residues or whole sequences.
 
@@ -318,17 +318,46 @@ adj.matrix <- adjacencyMatrix(sequences,
 adj.matrix[1:10, 1:10]
 ```
 
-`buildNetwork()` constructs a similarity network where nodes are sequences and edges connect sequences with an edit distance below a given threshold.
+## buildNetwork
 
-```{r }
-# Building an edge list
-g1 <- buildNetwork(data.frame(sequences = sequences),
-                   seq_col = "sequences",
-                   threshold = 2)
+`buildNetwork()` constructs a similarity network where nodes are sequences and edges connect sequences with an edit distance below a given threshold. The function now supports multiple distance metrics, flexible normalization options, and alignment-based scoring for protein sequences.
+
+### Basic Usage
+
+The simplest usage creates a network using Levenshtein edit distance:
+
+```{r basic-network}
+# Building an edge list with default Levenshtein distance
+g1 <- buildNetwork(
+  data.frame(sequences = sequences),
+  seq_col = "sequences",
+  threshold = 2  # Maximum 2 edits (insertions, deletions, or substitutions)
+)
+
+head(g1)
+```
+
+### Standard BCR/TCR Network 
+
+For typical BCR or TCR repertoire analysis, we recommend using normalized distances:
+
+```{r bcr-network}
+# Load example BCR data (assuming you have this)
+# data(example_bcr_data)
+
+# Build network with recommended settings
+g_bcr <- buildNetwork(
+  data.frame(sequences = sequences),
+  seq_col = "sequences",
+  threshold = 0.15,          # 15% dissimilarity threshold
+  metric = "levenshtein",    # Standard edit distance
+  normalize = "maxlen",      # Normalize by maximum length
+  ids = paste0("seq", 1:length(sequences))
+)
 
 # Forming network
-graph <- graph_from_edgelist(as.matrix(g1[,1:2]))
-E(graph)$weight <- g1[,3]
+graph <- graph_from_edgelist(as.matrix(g_bcr[, 1:2]))
+E(graph)$weight <- g_bcr[, 3]
 
 # Remove isolated nodes for clearer visualization
 graph <- delete_vertices(graph, which(degree(graph) == 0))
@@ -338,13 +367,46 @@ g_tidy <- as_tbl_graph(graph)
 
 # Plot the network
 ggraph(g_tidy, layout = "fr") + 
-  geom_edge_link(aes(width = weight), color = "black", alpha = 0.5) + 
+  geom_edge_link(aes(width = 1 - weight), color = "black", alpha = 0.5) + 
   geom_node_point(aes(size = degree(g_tidy, mode = "all")),
-                  fill = "steelblue", color= "black", shape = 21) +
+                  fill = "steelblue", color = "black", shape = 21) +
   theme_void() + 
   scale_edge_width(range = c(0.1, 0.5)) + 
-  labs(size = "Degree") +
+  labs(
+    title = "Sequence Network",
+    subtitle = "Levenshtein distance ≤ 15% (normalized by max length)",
+    size = "Degree"
+  ) +
   theme(legend.position = "right")
+```
+
+### Finding Clonotypes with V Gene Filtering
+
+When working with BCR/TCR data, filtering by V gene dramatically improves memory efficiency and biological relevance:
+
+```{r vgene-filtering, eval=FALSE}
+
+g_clones <- buildNetwork(
+  input.data = immapex_example.data[["AIRR"]],
+  seq_col = "junction_aa",
+  v_col = "v_call",           # Column with V gene assignments
+  threshold = 0.10,           # 10% dissimilarity
+  metric = "levenshtein",
+  normalize = "maxlen",
+  filter.v = TRUE,            # Only connect sequences with same V gene
+  filter.j = FALSE            # Optionally also filter by J gene
+)
+
+# Build graph and find clonotype clusters
+graph <- graph_from_edgelist(as.matrix(g_clones[, 1:2]))
+E(graph)$weight <- g_clones[, 3]
+
+# Find communities (putative clonotypes)
+communities <- cluster_louvain(graph)
+
+cat("Number of clonotypes identified:", length(communities), "\n")
+cat("Sizes of top 5 clonotypes:\n")
+print(sort(table(membership(communities)), decreasing = TRUE)[1:5])
 ```
 
 # Encoding Sequences for Model Input

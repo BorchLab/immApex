@@ -1,3 +1,5 @@
+`%||%` <- function(x, y) if (is.null(x)) y else x   # tiny helper
+
 #' Standard 20 amino acids
 #'
 #' Vector of one-letter codes for the 20 standard amino acids.
