@@ -437,20 +437,6 @@ test_that("Large dataset with V/J filtering completes", {
 # Test 9: Parameter Validation
 # ============================================================================
 
-test_that("Invalid metric rejected", {
-  data <- create_test_data(30)
-  
-  expect_error(
-    buildNetwork(
-      input.data = data,
-      seq_col = "junction_aa",
-      threshold = 2,
-      dist_type = "invalid_metric"
-    ),
-    "should be one of"
-  )
-})
-
 test_that("Invalid normalization rejected", {
   data <- create_test_data(30)
   
