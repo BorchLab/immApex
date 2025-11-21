@@ -349,9 +349,9 @@ For typical BCR or TCR repertoire analysis, we recommend using normalized distan
 g_bcr <- buildNetwork(
   data.frame(sequences = sequences),
   seq_col = "sequences",
-  threshold = 0.15,          # 15% dissimilarity threshold
-  metric = "levenshtein",    # Standard edit distance
-  normalize = "maxlen",      # Normalize by maximum length
+  threshold = 0.15,             # 15% dissimilarity threshold
+  dist_type = "levenshtein",    # Standard edit distance
+  normalize = "maxlen",         # Normalize by maximum length
   ids = paste0("seq", 1:length(sequences))
 )
 
@@ -391,7 +391,7 @@ g_clones <- buildNetwork(
   seq_col = "junction_aa",
   v_col = "v_call",           # Column with V gene assignments
   threshold = 0.10,           # 10% dissimilarity
-  metric = "levenshtein",
+  dist_type = "levenshtein",
   normalize = "maxlen",
   filter.v = TRUE,            # Only connect sequences with same V gene
   filter.j = FALSE            # Optionally also filter by J gene
