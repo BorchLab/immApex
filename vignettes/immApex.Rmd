@@ -58,11 +58,11 @@ Parameters for ```getIMGT()```
 
 Here, we will use the ```getIMGT()``` function to get the amino acid sequences for the TRBV region to get all the sequences by V gene allele.
 
-```{r, eval=knitr::is_html_output()}
+```{r}
 # Function to check IMGT website availability
 is_imgt_available <- function() {
   tryCatch({
-    r <- httr::HEAD("https://www.imgt.org", timeout(5))
+    r <- httr::HEAD("https://www.imgt.org", httr::timeout(5))
     httr::status_code(r) == 200
   }, error = function(e) {
     FALSE
@@ -121,7 +121,7 @@ Parameters for ```inferCDR```
 * **sequence.type** Type of sequence - "aa" for amino acid or "nt" for nucleotide
 * **sequences** The specific regions of the CDR loop to get from the data.
 
-```{r }
+```{r}
 if (is_imgt_available()) {
   Adaptive_example <- inferCDR(Adaptive_example,
                                chain = "TRB", 
@@ -155,7 +155,7 @@ Parameters for ```generateSequences()```
 ```{r }
 sequences <- generateSequences(prefix.motif = "CAS",
                                suffix.motif = "YF",
-                               number.of.sequences = 1000,
+                               number.of.sequences = 200,
                                min.length = 8,
                                max.length = 16)
 sequences <- unique(sequences)
@@ -165,7 +165,7 @@ head(sequences)
 If we want to generate nucleotide sequences instead of amino acids, we must to change the **sequence.dictionary**.
 
 ```{r }
-nucleotide.sequences <- generateSequences(number.of.sequences = 1000,
+nucleotide.sequences <- generateSequences(number.of.sequences = 200,
                                           min.length = 8,
                                           max.length = 16, 
                                           sequence.dictionary = c("A", "C", "T", "G"))
@@ -575,15 +575,15 @@ First, we'll simulate two distinct classes of sequences using ```generateSequenc
 # Step 1a: Generate two distinct classes of sequences
 class1.sequences <- generateSequences(prefix.motif = "CAS",
                                       min.length = 3,
-                                      number.of.sequences = 500)
+                                      number.of.sequences = 250)
 
 class2.sequences <- generateSequences(prefix.motif = "CSG",
                                       min.length = 3,
-                                      number.of.sequences = 500)
+                                      number.of.sequences = 250)
 
 # Combine sequences and create labels
 all.sequences <- c(class1.sequences, class2.sequences)
-labels <- as.factor(c(rep("Class1", 500), rep("Class2", 500)))
+labels <- as.factor(c(rep("Class1", 250), rep("Class2", 250)))
 
 # Step 1b: Use propertyEncoder to create a feature matrix from Atchley factors
 feature.matrix <- propertyEncoder(all.sequences, 

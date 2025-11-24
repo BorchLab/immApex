@@ -60,9 +60,7 @@ to use for alignment-based metrics (`"nw"`, `"sw"`). Options include:
    \item{`"PAM70"`}        - PAM70 matrix
    \item{`"PAM120"`}       - PAM120 matrix
    \item{`"PAM250"`}       - PAM250 matrix (distantly related)
-   \item{`"identity"`}     - Simple identity matrix (match=1, mismatch=-1)
- }
-Or provide a custom numeric matrix with row/column names as amino acid codes.}
+ }}
 
 \item{normalize}{Character string specifying how to normalize distances:
 \itemize{
