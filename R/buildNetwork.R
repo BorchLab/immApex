@@ -21,7 +21,7 @@
 #' `data.frame` **or** a symmetric `Matrix::dgCMatrix` adjacency matrix.
 #' @param weight `"dist"` (store the edit distance) **or** `"binary"`
 #' (all edges get weight 1). Ignored when `output = "edges"`.
-#' @param metric Character string specifying the distance metric to use:
+#' @param dist_type Character string specifying the distance metric to use:
 #'  \itemize{
 #'    \item{`"levenshtein"`}  - Standard edit distance (default, backward compatible)
 #'    \item{`"hamming"`}      - Hamming distance (requires equal-length sequences)
@@ -29,13 +29,7 @@
 #'    \item{`"nw"`}           - Needleman-Wunsch global alignment score
 #'    \item{`"sw"`}           - Smith-Waterman local alignment score
 #'  }
-#' @param normalize Character string specifying how to normalize distances:
-#'  \itemize{
-#'    \item{`"none"`}         - Raw distance values (default, backward compatible)
-#'    \item{`"maxlen"`}       - Normalize by max(length(seq1), length(seq2))
-#'    \item{`"length"`}       - Normalize by mean sequence length
-#'  }
-#' @param subst_matrix Character string specifying which substitution matrix 
+#' @param dist_mat Character string specifying which substitution matrix 
 #' to use for alignment-based metrics (`"nw"`, `"sw"`). Options include:
 #'  \itemize{
 #'    \item{`"BLOSUM45"`}     - BLOSUM45 matrix (distantly related)
@@ -48,9 +42,13 @@
 #'    \item{`"PAM70"`}        - PAM70 matrix
 #'    \item{`"PAM120"`}       - PAM120 matrix
 #'    \item{`"PAM250"`}       - PAM250 matrix (distantly related)
-#'    \item{`"identity"`}     - Simple identity matrix (match=1, mismatch=-1)
 #'  }
-#' Or provide a custom numeric matrix with row/column names as amino acid codes.
+#' @param normalize Character string specifying how to normalize distances:
+#'  \itemize{
+#'    \item{`"none"`}         - Raw distance values (default, backward compatible)
+#'    \item{`"maxlen"`}       - Normalize by max(length(seq1), length(seq2))
+#'    \item{`"length"`}       - Normalize by mean sequence length
+#'  }
 #' @param gap_open Gap opening penalty for alignment-based metrics (default: -10).
 #' Only used when `metric` is "nw" or "sw".
 #' @param gap_extend Gap extension penalty for alignment-based metrics (default: -1).
@@ -69,7 +67,7 @@
 #' edges <- buildNetwork(input.data = immapex_example.data[["AIRR"]],
 #'                       seq_col    = "junction_aa",
 #'                       threshold  = 0.1,
-#'                       metric     = "hamming",
+#'                       dist_type  = "hamming",
 #'                       normalize  = "maxlen",
 #'                       filter.v   = TRUE)
 #'
@@ -77,25 +75,25 @@
 #' edges <- buildNetwork(input.data = immapex_example.data[["AIRR"]],
 #'                       seq_col    = "junction_aa",
 #'                       threshold  = 0.2,
-#'                       metric     = "nw",
+#'                       dist_type  = "nw",
 #'                       normalize  = "maxlen",
-#'                       subst_matrix = "BLOSUM62",
+#'                       dist_mat   = "BLOSUM62",
 #'                       filter.v   = TRUE)
 #'
 #' # Using PAM30 for closely related sequences
 #' edges <- buildNetwork(input.data = immapex_example.data[["AIRR"]],
 #'                       seq_col    = "junction_aa",
 #'                       threshold  = 0.15,
-#'                       metric     = "nw",
+#'                       dist_type  = "nw",
 #'                       normalize  = "maxlen",
-#'                       subst_matrix = "PAM30",
+#'                       dist_mat   = "PAM30",
 #'                       filter.v   = TRUE)
 #'
 #' # Damerau-Levenshtein (allows transpositions)
 #' edges <- buildNetwork(input.data = immapex_example.data[["AIRR"]],
 #'                       seq_col    = "junction_aa",
 #'                       threshold  = 2,
-#'                       metric     = "damerau",
+#'                       dist_type  = "damerau",
 #'                       filter.v   = TRUE)
 #'
 #' @return edge-list `data.frame` **or** sparse adjacency `dgCMatrix`
@@ -107,61 +105,53 @@ buildNetwork <- function(input.data        = NULL,
                          v_col             = NULL,
                          j_col             = NULL,
                          threshold         = 2,
+                         dist_type         = "levenshtein",
+                         dist_mat          = NULL,
+                         normalize         = c("none", "length", "maxlen"), 
+                         gap_open          = -10,
+                         gap_extend        = -1,
                          filter.v          = FALSE,
                          filter.j          = FALSE,
                          ids               = NULL,
                          output            = c("edges", "sparse"),
-                         weight            = c("dist", "binary"),
-                         metric            = c("levenshtein", "hamming", 
-                                               "damerau", "nw", "sw"),
-                         normalize         = c("none", "maxlen", "length"),
-                         subst_matrix      = "BLOSUM62",
-                         gap_open          = -10,
-                         gap_extend        = -1) {
+                         weight            = c("dist", "binary")) {
   
-  output <- match.arg(output)
-  weight <- match.arg(weight)
-  metric <- match.arg(metric)
-  normalize <- match.arg(normalize)
+  output    <- match.arg(output)
+  weight    <- match.arg(weight)
+  normalize <- match.arg(normalize) # Validate input
   
   ## 1. Decide where sequences come from 
   if (is.null(input.data)) {
-    # user gave a bare vector
     if (is.null(input.sequences))
       stop("Provide either `input.data` *or* a `sequences` vector.")
     seq_vec <- as.character(input.sequences)
     n       <- length(seq_vec)
     v_vec <- j_vec <- NULL         
   } else {
-    # user gave a data.frame / tibble
     if (!is.data.frame(input.data))
       stop("`input.data` must be a data.frame / tibble.")
     
     dat <- input.data
-    # column auto-detection helpers
-    guess_column <- function(x, choices)
-      choices[choices %in% names(x)][1]
+    guess_column <- function(x, choices) choices[choices %in% names(x)][1]
     
     if (is.null(seq_col))
       seq_col <- guess_column(dat, c("junction_aa", "cdr3", "sequence", "seq"))
     if (is.null(seq_col) || !seq_col %in% names(dat))
-      stop("Could not find a sequence column.  Please supply `seq_col`.")
+      stop("Could not find a sequence column. Please supply `seq_col`.")
     
     seq_vec <- as.character(dat[[seq_col]])
     n       <- length(seq_vec)
     
     ## 2. V / J columns 
     if (filter.v || !is.null(v_col)) {
-      if (is.null(v_col))
-        v_col <- guess_column(dat, c("v_call", "v_gene", "v"))
+      if (is.null(v_col)) v_col <- guess_column(dat, c("v_call", "v_gene", "v"))
       if (is.null(v_col) || !v_col %in% names(dat))
         stop("`v_col` not found (needed for V filtering).")
       v_vec <- as.character(dat[[v_col]])
     } else v_vec <- NULL
     
     if (filter.j || !is.null(j_col)) {
-      if (is.null(j_col))
-        j_col <- guess_column(dat, c("j_call", "j_gene", "j"))
+      if (is.null(j_col)) j_col <- guess_column(dat, c("j_call", "j_gene", "j"))
       if (is.null(j_col) || !j_col %in% names(dat))
         stop("`j_col` not found (needed for J filtering).")
       j_vec <- as.character(dat[[j_col]])
@@ -172,39 +162,38 @@ buildNetwork <- function(input.data        = NULL,
       ids <- rownames(dat) %||% paste0("cell", seq_len(n))
   }
   
-  ##  4. Input sanity checks 
-  if (length(threshold) != 1 || !is.numeric(threshold) || threshold <= 0)
-    stop("`threshold` must be > 0 (integer or 0-1).")
-  if (threshold <= 1 && threshold <= 0)
-    stop("Relative threshold must be 0 < x <= 1.")
-  if (filter.v && is.null(v_vec))
-    stop("`filter.v = TRUE` requires V gene information.")
-  if (filter.j && is.null(j_vec))
-    stop("`filter.j = TRUE` requires J gene information.")
+  ## 4. Input sanity checks 
+  if (length(threshold) != 1 || !is.numeric(threshold) || threshold < 0)
+    stop("`threshold` must be >= 0.")
   
-  if (!is.null(ids) && length(ids) != n)
-    stop("`ids` must have the same length as the sequence vector.")
+  if (filter.v && is.null(v_vec)) stop("`filter.v = TRUE` requires V gene information.")
+  if (filter.j && is.null(j_vec)) stop("`filter.j = TRUE` requires J gene information.")
+  if (!is.null(ids) && length(ids) != n) stop("`ids` must have the same length as the sequence vector.")
   
-  # Warn about metric-specific considerations
-  if (metric == "hamming" && any(nchar(seq_vec) != nchar(seq_vec)[1])) {
-    warning("Hamming distance requires equal-length sequences. ",
-            "Pairs with different lengths will be excluded.")
+  # Check for Hamming length requirement 
+  if (dist_type == "hamming") {
+    # Efficiently check if all lengths are the same as the first one
+    if (n > 0) {
+      first_len <- nchar(seq_vec[1])
+      if (any(nchar(seq_vec) != first_len)) {
+        warning("Hamming distance requires equal-length sequences. ", 
+                "Pairs of unequal length will be assigned max distance.")
+      }
+    }
   }
   
-  if (normalize != "none" && threshold >= 1) {
-    message("Note: Using normalized distances with threshold >= 1. ",
-            "Consider using threshold < 1 (e.g., 0.1 for 10% dissimilarity) ",
-            "for normalized distances.")
+  # Prepare Matrix for NW/SW
+  numeric_mat <- NULL
+  if (dist_type %in% c("nw", "sw")) {
+    # If NULL, default to BLOSUM80
+    if (is.null(dist_mat)) dist_mat <- "BLOSUM80"
+    
+    # Convert the string name (or custom matrix) into the actual matrix object
+    numeric_mat <- .fetch.matrix(dist_mat)
   }
   
-  ## 5. Get substitution matrix (if needed)
-  subst_mat_obj <- NULL
-  if (metric %in% c("nw", "sw")) {
-    subst_mat_obj <- get_substitution_matrix(subst_matrix)
-  }
-  
-  ##  6. Call the C++ engine 
-  edge_df <- fast_edge_list(
+  ## 5. Call the C++ engine 
+  edge_df  <- fast_edge_list(
     seqs         = seq_vec,
     thresh       = threshold,
     v_gene       = v_vec,
@@ -212,17 +201,17 @@ buildNetwork <- function(input.data        = NULL,
     match_v      = filter.v,
     match_j      = filter.j,
     ids          = ids,
-    metric       = metric,
-    normalize    = normalize,
-    subst_matrix = subst_mat_obj,
+    metric       = dist_type,
+    subst_matrix = numeric_mat,
     gap_open     = gap_open,
-    gap_extend   = gap_extend
+    gap_extend   = gap_extend,
+    normalize    = normalize  
   )
   
   if (output == "edges")
     return(edge_df)
   
-  ## convert edge list to sparse adjacency 
+  ## 6. Convert edge list to sparse adjacency 
   if (!requireNamespace("Matrix", quietly = TRUE))
     stop("Matrix package required for sparse output.")
   
@@ -241,6 +230,8 @@ buildNetwork <- function(input.data        = NULL,
   )
   return(A)
 }
+
+
 
 #' Get substitution matrix from package data or custom input
 #' 

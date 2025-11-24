@@ -8,6 +8,20 @@ amino.acids <- c("A", "R", "N", "D", "C", "Q", "E", "G", "H", "I", "L", "K", "M"
 
 "%!in%" <- Negate("%in%")
 
+# Hoist helper function from the original geometricEncoder.R
+.fetch.matrix <- function(m) {
+  if (is.matrix(m)) {
+    if (!all(dim(m) == 20) || is.null(rownames(m))) {
+      stop("If `method` is a matrix, it must be 20x20 with amino acid rownames.")
+    }
+    return(m)
+  }
+  data("immapex_blosum.pam.matrices", package = "immApex", envir = environment())
+  mat <- immapex_blosum.pam.matrices[[m]]
+  if (is.null(mat)) stop("Cannot find matrix for method '", m, "'.")
+  return(mat)
+}
+
 .summary.function <- function(x) {
   x <- switch(x,
               "mean"   = base::mean,

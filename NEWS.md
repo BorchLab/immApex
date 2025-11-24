@@ -3,7 +3,7 @@
 ## NEW FEATURES
 The `buildNetwork()` function has been significantly enhanced to include:
 
-* **Multiple distance metrics**: Added support for five distance metrics via the `metric` parameter:
+* **Multiple distance metrics**: Added support for five distance metrics via the `dist_type` parameter:
   - `"levenshtein"` (default): Standard edit distance
   - `"hamming"`: Substitutions only (requires equal-length sequences)
   - `"damerau"`: Levenshtein with transpositions

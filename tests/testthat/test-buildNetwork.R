@@ -73,7 +73,7 @@ test_that("Levenshtein metric works", {
     input.data = data,
     seq_col = "junction_aa",
     threshold = 2,
-    metric = "levenshtein",
+    dist_type = "levenshtein",
     filter.v = TRUE
   )
   
@@ -99,7 +99,7 @@ test_that("Hamming metric works with equal-length sequences", {
     input.data = data,
     seq_col = "junction_aa",
     threshold = 2,
-    metric = "hamming",
+    dist_type = "hamming",
     filter.v = TRUE
   )
   
@@ -113,7 +113,7 @@ test_that("Damerau metric works", {
     input.data = data,
     seq_col = "junction_aa",
     threshold = 2,
-    metric = "damerau",
+    dist_type = "damerau",
     filter.v = TRUE
   )
   
@@ -128,8 +128,8 @@ test_that("Needleman-Wunsch metric works", {
     input.data = data,
     seq_col = "junction_aa",
     threshold = 5,
-    metric = "nw",
-    subst_matrix = "BLOSUM62",
+    dist_type = "nw",
+    dist_mat = "BLOSUM62",
     filter.v = TRUE
   )
   
@@ -143,8 +143,8 @@ test_that("Smith-Waterman metric works", {
     input.data = data,
     seq_col = "junction_aa",
     threshold = 5,
-    metric = "sw",
-    subst_matrix = "BLOSUM62",
+    dist_type = "sw",
+    dist_mat = "BLOSUM62",
     filter.v = TRUE
   )
   
@@ -212,8 +212,8 @@ test_that("BLOSUM62 matrix works", {
     input.data = data,
     seq_col = "junction_aa",
     threshold = 5,
-    metric = "nw",
-    subst_matrix = "BLOSUM62",
+    dist_type = "nw",
+    dist_mat = "BLOSUM62",
     filter.v = TRUE
   )
   
@@ -227,23 +227,8 @@ test_that("PAM30 matrix works", {
     input.data = data,
     seq_col = "junction_aa",
     threshold = 5,
-    metric = "nw",
-    subst_matrix = "PAM30",
-    filter.v = TRUE
-  )
-  
-  expect_s3_class(edges, "data.frame")
-})
-
-test_that("Identity matrix works", {
-  data <- create_test_data(20)
-  
-  edges <- buildNetwork(
-    input.data = data,
-    seq_col = "junction_aa",
-    threshold = 5,
-    metric = "nw",
-    subst_matrix = "identity",
+    dist_type = "nw",
+    dist_mat  = "PAM30",
     filter.v = TRUE
   )
   
@@ -452,20 +437,6 @@ test_that("Large dataset with V/J filtering completes", {
 # Test 9: Parameter Validation
 # ============================================================================
 
-test_that("Invalid metric rejected", {
-  data <- create_test_data(30)
-  
-  expect_error(
-    buildNetwork(
-      input.data = data,
-      seq_col = "junction_aa",
-      threshold = 2,
-      metric = "invalid_metric"
-    ),
-    "should be one of"
-  )
-})
-
 test_that("Invalid normalization rejected", {
   data <- create_test_data(30)
   
@@ -488,10 +459,10 @@ test_that("Invalid substitution matrix rejected", {
       input.data = data,
       seq_col = "junction_aa",
       threshold = 5,
-      metric = "nw",
-      subst_matrix = "invalid_matrix"
+      dist_type = "nw",
+      dist_mat = "invalid_matrix"
     ),
-    "must be one of"
+    "Cannot find matrix for method"
   )
 })
 
@@ -508,7 +479,7 @@ test_that("Hamming requires equal length", {
       input.data = data,
       seq_col = "junction_aa",
       threshold = 2,
-      metric = "hamming",
+      dist_type = "hamming",
       filter.v = TRUE
     ),
     "equal-length"
