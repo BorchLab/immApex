@@ -58,7 +58,7 @@ Parameters for ```getIMGT()```
 
 Here, we will use the ```getIMGT()``` function to get the amino acid sequences for the TRBV region to get all the sequences by V gene allele.
 
-```{r, eval=knitr::is_html_output()}
+```{r, eval=F}
 # Function to check IMGT website availability
 is_imgt_available <- function() {
   tryCatch({
