@@ -39,10 +39,7 @@ jobs:
       - name: Install R dependencies
         uses: r-lib/actions/setup-r-dependencies@v2
         with:
-            extra-packages: rcmdcheck, keras3  # Add keras to the list of extra packages
-
-      - name: Install Keras Python dependencies
-        run: R -e 'keras3::install_keras()'  # This runs the install_keras function from R
+            extra-packages: rcmdcheck
           
       - uses: r-lib/actions/check-r-package@v2
         with:
