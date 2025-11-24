@@ -58,11 +58,11 @@ Parameters for ```getIMGT()```
 
 Here, we will use the ```getIMGT()``` function to get the amino acid sequences for the TRBV region to get all the sequences by V gene allele.
 
-```{r, eval=FALSE}
+```{r}
 # Function to check IMGT website availability
 is_imgt_available <- function() {
   tryCatch({
-    r <- httr::HEAD("https://www.imgt.org", timeout(5))
+    r <- httr::HEAD("https://www.imgt.org", httr::timeout(5))
     httr::status_code(r) == 200
   }, error = function(e) {
     FALSE
@@ -121,7 +121,7 @@ Parameters for ```inferCDR```
 * **sequence.type** Type of sequence - "aa" for amino acid or "nt" for nucleotide
 * **sequences** The specific regions of the CDR loop to get from the data.
 
-```{r eval=FALSE}
+```{r}
 if (is_imgt_available()) {
   Adaptive_example <- inferCDR(Adaptive_example,
                                chain = "TRB", 
