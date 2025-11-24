@@ -4,9 +4,12 @@ API for single-cell immune repertoire deep learning models
 <img align="right" src="https://github.com/BorchLab/immApex/blob/main/www/immApex_hex.png" width="305" height="352">
 
 <!-- badges: start -->
-[![BioC status](http://www.bioconductor.org/shields/build/release/bioc/immApex.svg)](https://bioconductor.org/checkResults/release/bioc-LATEST/immApex)
+
 [![R-CMD-check](https://github.com/BorchLab/immApex/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/BorchLab/immApex/actions/workflows/R-CMD-check.yaml)
 [![Codecov test coverage](https://codecov.io/gh/BorchLab/immApex/branch/main/graph/badge.svg)](https://app.codecov.io/gh/BorchLab/immApex?branch=main)
+[![Bioc Release Build](http://www.bioconductor.org/shields/build/release/bioc/immApex.svg)](http://www.bioconductor.org/checkResults/release/bioc-LATEST/immApex)
+[![Bioc Devel Build](http://www.bioconductor.org/shields/build/devel/bioc/immApex.svg)](http://www.bioconductor.org/checkResults/devel/bioc-LATEST/immApex)
+[![Bioc Downloads](http://www.bioconductor.org/shields/downloads/release/immApex.svg)](http://bioconductor.org/packages/stats/bioc/immApex/)
 <!-- badges: end -->
 
 ## Introduction
