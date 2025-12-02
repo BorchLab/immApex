@@ -11,6 +11,11 @@ buildNetwork(
   v_col = NULL,
   j_col = NULL,
   threshold = 2,
+  dist_type = "levenshtein",
+  dist_mat = NULL,
+  normalize = c("none", "length", "maxlen"),
+  gap_open = -10,
+  gap_extend = -1,
   filter.v = FALSE,
   filter.j = FALSE,
   ids = NULL,
@@ -29,9 +34,50 @@ inside `input.data`. Ignored when `NULL` and `seq_col` is non-`NULL`.}
 By default the function looks for common AIRR names (`junction_aa`, 
 `cdr3`, `v_call`, `j_call`).}
 
-\item{threshold}{>= 1 for absolute distance **or** 0 < x <= 1 for relative.}
+\item{threshold}{>= 1 for absolute distance **or** 0 < x <= 1 for relative.
+When using normalized distances (`normalize != "none"`), this typically 
+should be a value between 0 and 1 (e.g., 0.1 for 10 percent dissimilarity).}
 
-\item{filter.v, filter.j}{Logical; require identical V/J when `TRUE`.}
+\item{dist_type}{Character string specifying the distance metric to use:
+\itemize{
+  \item{`"levenshtein"`}  - Standard edit distance (default, backward compatible)
+  \item{`"hamming"`}      - Hamming distance (requires equal-length sequences)
+  \item{`"damerau"`}      - Damerau-Levenshtein (allows transpositions)
+  \item{`"nw"`}           - Needleman-Wunsch global alignment score
+  \item{`"sw"`}           - Smith-Waterman local alignment score
+}}
+
+\item{dist_mat}{Character string specifying which substitution matrix 
+to use for alignment-based metrics (`"nw"`, `"sw"`). Options include:
+ \itemize{
+   \item{`"BLOSUM45"`}     - BLOSUM45 matrix (distantly related)
+   \item{`"BLOSUM50"`}     - BLOSUM50 matrix
+   \item{`"BLOSUM62"`}     - BLOSUM62 matrix (default, good for proteins)
+   \item{`"BLOSUM80"`}     - BLOSUM80 matrix (closely related)
+   \item{`"BLOSUM100"`}    - BLOSUM100 matrix (very closely related)
+   \item{`"PAM30"`}        - PAM30 matrix (closely related sequences)
+   \item{`"PAM40"`}        - PAM40 matrix
+   \item{`"PAM70"`}        - PAM70 matrix
+   \item{`"PAM120"`}       - PAM120 matrix
+   \item{`"PAM250"`}       - PAM250 matrix (distantly related)
+ }}
+
+\item{normalize}{Character string specifying how to normalize distances:
+\itemize{
+  \item{`"none"`}         - Raw distance values (default, backward compatible)
+  \item{`"maxlen"`}       - Normalize by max(length(seq1), length(seq2))
+  \item{`"length"`}       - Normalize by mean sequence length
+}}
+
+\item{gap_open}{Gap opening penalty for alignment-based metrics (default: -10).
+Only used when `metric` is "nw" or "sw".}
+
+\item{gap_extend}{Gap extension penalty for alignment-based metrics (default: -1).
+Only used when `metric` is "nw" or "sw".}
+
+\item{filter.v}{Logical; require identical V when `TRUE`.}
+
+\item{filter.j}{Logical; require identical J when `TRUE`.}
 
 \item{ids}{Optional character labels; recycled from row-names if missing.}
 
@@ -45,15 +91,50 @@ By default the function looks for common AIRR names (`junction_aa`,
 edge-list `data.frame` **or** sparse adjacency `dgCMatrix`
 }
 \description{
-Build Edit Distance Network
+Build a sequence similarity network using various distance metrics and
+normalization options. Supports Levenshtein, Hamming, Damerau-Levenshtein,
+Needleman-Wunsch, and Smith-Waterman distances.
 }
 \examples{
 data(immapex_example.data)
 
-# Build Edge List
+# Levenshtein distance
 edges <- buildNetwork(input.data = immapex_example.data[["AIRR"]],
                       seq_col    = "junction_aa",
                       threshold  = 0.9,     
+                      filter.v   = TRUE)
+
+# Using Hamming distance with normalization
+edges <- buildNetwork(input.data = immapex_example.data[["AIRR"]],
+                      seq_col    = "junction_aa",
+                      threshold  = 0.1,
+                      dist_type  = "hamming",
+                      normalize  = "maxlen",
+                      filter.v   = TRUE)
+
+# Using Needleman-Wunsch with BLOSUM62
+edges <- buildNetwork(input.data = immapex_example.data[["AIRR"]],
+                      seq_col    = "junction_aa",
+                      threshold  = 0.2,
+                      dist_type  = "nw",
+                      normalize  = "maxlen",
+                      dist_mat   = "BLOSUM62",
+                      filter.v   = TRUE)
+
+# Using PAM30 for closely related sequences
+edges <- buildNetwork(input.data = immapex_example.data[["AIRR"]],
+                      seq_col    = "junction_aa",
+                      threshold  = 0.15,
+                      dist_type  = "nw",
+                      normalize  = "maxlen",
+                      dist_mat   = "PAM30",
+                      filter.v   = TRUE)
+
+# Damerau-Levenshtein (allows transpositions)
+edges <- buildNetwork(input.data = immapex_example.data[["AIRR"]],
+                      seq_col    = "junction_aa",
+                      threshold  = 2,
+                      dist_type  = "damerau",
                       filter.v   = TRUE)
 
 }

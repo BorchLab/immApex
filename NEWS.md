@@ -1,3 +1,20 @@
+# immApex VERSION 1.4.2
+
+## NEW FEATURES
+The `buildNetwork()` function has been significantly enhanced to include:
+
+* **Multiple distance metrics**: Added support for five distance metrics via the `dist_type` parameter:
+  - `"levenshtein"` (default): Standard edit distance
+  - `"hamming"`: Substitutions only (requires equal-length sequences)
+  - `"damerau"`: Levenshtein with transpositions
+  - `"nw"`: Needleman-Wunsch global alignment
+  - `"sw"`: Smith-Waterman local alignment
+
+* **Flexible normalization**: New `normalize` parameter supports three modes:
+  - `"none"` (default): Raw distance values (backward compatible)
+  - `"maxlen"`: Normalize by max(length(seq1), length(seq2))
+  - `"length"`: Normalize by mean sequence length
+
 # immApex VERSION 1.3.7
 
 ## UNDERLYING CHANGES

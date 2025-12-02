@@ -9,7 +9,7 @@ encodeSequences_cpp <- function(sequences, mode = "onehot", alphabet = as.charac
     .Call(`_immApex_encodeSequences_cpp`, sequences, mode, alphabet, prop_mat_, pad_token, summary, max_len, nthreads)
 }
 
-fast_edge_list <- function(seqs, thresh = 1.0, v_gene = NULL, j_gene = NULL, match_v = FALSE, match_j = FALSE, ids = NULL) {
-    .Call(`_immApex_fast_edge_list`, seqs, thresh, v_gene, j_gene, match_v, match_j, ids)
+fast_edge_list <- function(seqs, thresh = 1.0, v_gene = NULL, j_gene = NULL, match_v = FALSE, match_j = FALSE, ids = NULL, metric = "levenshtein", normalize = "none", subst_matrix = NULL, gap_open = -10L, gap_extend = -1L) {
+    .Call(`_immApex_fast_edge_list`, seqs, thresh, v_gene, j_gene, match_v, match_j, ids, metric, normalize, subst_matrix, gap_open, gap_extend)
 }
 
