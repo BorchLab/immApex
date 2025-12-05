@@ -1,4 +1,4 @@
-# immApex VERSION 1.4.2
+# immApex VERSION 1.4.3
 
 ## NEW FEATURES
 The `buildNetwork()` function has been significantly enhanced to include:

@@ -36,7 +36,7 @@ By default the function looks for common AIRR names (`junction_aa`,
 
 \item{threshold}{>= 1 for absolute distance **or** 0 < x <= 1 for relative.
 When using normalized distances (`normalize != "none"`), this typically 
-should be a value between 0 and 1 (e.g., 0.1 for 10 percent dissimilarity).}
+should be a value between 0 and 1 (e.g., 0.9 for 10 percent dissimilarity).}
 
 \item{dist_type}{Character string specifying the distance metric to use:
 \itemize{
