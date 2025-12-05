@@ -13,7 +13,7 @@
 #' `cdr3`, `v_call`, `j_call`).
 #' @param threshold >= 1 for absolute distance **or** 0 < x <= 1 for relative.
 #' When using normalized distances (`normalize != "none"`), this typically 
-#' should be a value between 0 and 1 (e.g., 0.1 for 10 percent dissimilarity).
+#' should be a value between 0 and 1 (e.g., 0.9 for 10 percent dissimilarity).
 #' @param filter.v Logical; require identical V when `TRUE`.
 #' @param filter.j Logical; require identical J when `TRUE`.
 #' @param ids Optional character labels; recycled from row-names if missing.
