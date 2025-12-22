@@ -1,3 +1,8 @@
+# immApex VERSION 1.4.4
+
+## BUGS
+* Fixed `buildNetworks()` issue that aggregates similarity for duplicated sequences. 
+
 # immApex VERSION 1.4.3
 
 ## NEW FEATURES

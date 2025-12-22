@@ -10,10 +10,10 @@
 #' inside `input.data`. Ignored when `NULL` and `seq_col` is non-`NULL`.
 #' @param seq_col,v_col,j_col Column names to use when `input.data` is given. 
 #' By default the function looks for common AIRR names (`junction_aa`, 
-#' `cdr3`, `v_call`, `j_call`).
+#' `cdr3`, `sequence`, `seq`).
 #' @param threshold >= 1 for absolute distance **or** 0 < x <= 1 for relative.
 #' When using normalized distances (`normalize != "none"`), this typically 
-#' should be a value between 0 and 1 (e.g., 0.9 for 10 percent dissimilarity).
+#' should be a value between 0.0 and 1.0 (e.g., 0.1 for 10 percent dissimilarity).
 #' @param filter.v Logical; require identical V when `TRUE`.
 #' @param filter.j Logical; require identical J when `TRUE`.
 #' @param ids Optional character labels; recycled from row-names if missing.
@@ -96,7 +96,7 @@
 #'                       dist_type  = "damerau",
 #'                       filter.v   = TRUE)
 #'
-#' @return edge-list `data.frame` **or** sparse adjacency `dgCMatrix`
+#' @return edge-list `data.frame` **or** sparse adjacency `dgCMatrix` of distances
 #' @importFrom Matrix sparseMatrix
 #' @export
 buildNetwork <- function(input.data        = NULL,
@@ -176,7 +176,7 @@ buildNetwork <- function(input.data        = NULL,
     if (n > 0) {
       first_len <- nchar(seq_vec[1])
       if (any(nchar(seq_vec) != first_len)) {
-        warning("Hamming distance requires equal-length sequences. ", 
+        message("Hamming distance requires equal-length sequences. ", 
                 "Pairs of unequal length will be assigned max distance.")
       }
     }
@@ -208,12 +208,29 @@ buildNetwork <- function(input.data        = NULL,
     normalize    = normalize  
   )
   
+  # Remove Duplicate Edges
+  if (nrow(edge_df) > 0) {
+    edge_key <- paste(
+      pmin(edge_df$from, edge_df$to),
+      pmax(edge_df$from, edge_df$to),
+      sep = "\t"
+    )
+    
+    # Check if there are duplicates
+    if (anyDuplicated(edge_key)) {
+      agg_idx <- !duplicated(edge_key)
+      edge_df <- edge_df[agg_idx, , drop = FALSE]
+    }
+  }
+  
   if (output == "edges")
     return(edge_df)
   
   ## 6. Convert edge list to sparse adjacency 
   if (!requireNamespace("Matrix", quietly = TRUE))
     stop("Matrix package required for sparse output.")
+  
+  # =========================================================================
   
   all_ids <- sort(unique(c(edge_df$from, edge_df$to)))
   idx_from <- match(edge_df$from, all_ids)

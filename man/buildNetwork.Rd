@@ -32,11 +32,11 @@ inside `input.data`. Ignored when `NULL` and `seq_col` is non-`NULL`.}
 
 \item{seq_col, v_col, j_col}{Column names to use when `input.data` is given. 
 By default the function looks for common AIRR names (`junction_aa`, 
-`cdr3`, `v_call`, `j_call`).}
+`cdr3`, `sequence`, `seq`).}
 
 \item{threshold}{>= 1 for absolute distance **or** 0 < x <= 1 for relative.
 When using normalized distances (`normalize != "none"`), this typically 
-should be a value between 0 and 1 (e.g., 0.9 for 10 percent dissimilarity).}
+should be a value between 0.0 and 1.0 (e.g., 0.1 for 10 percent dissimilarity).}
 
 \item{dist_type}{Character string specifying the distance metric to use:
 \itemize{
@@ -88,7 +88,7 @@ Only used when `metric` is "nw" or "sw".}
 (all edges get weight 1). Ignored when `output = "edges"`.}
 }
 \value{
-edge-list `data.frame` **or** sparse adjacency `dgCMatrix`
+edge-list `data.frame` **or** sparse adjacency `dgCMatrix` of distances
 }
 \description{
 Build a sequence similarity network using various distance metrics and

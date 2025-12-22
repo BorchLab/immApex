@@ -288,8 +288,23 @@ DataFrame fast_edge_list(CharacterVector seqs,
       if (max_l == 0) continue;
       
       int maxd;
-      if (thresh >= 1.0) maxd = (int)thresh;
-      else maxd = (int)((1.0 - thresh) * max_l); 
+      if (thresh >= 1.0) {
+        // Absolute distance threshold
+        maxd = (int)thresh;
+      } else {
+        // Normalized distance threshold - use same length as normalization
+        double norm_len;
+        if (normalize == "maxlen") {
+          norm_len = (double)max_l;
+        } else if (normalize == "length") {
+          norm_len = (lens[i] + lens[k]) / 2.0;
+        } else {
+          // normalize == "none": interpret threshold as fraction of max_l
+          norm_len = (double)max_l;
+        }
+        maxd = (int)(thresh * norm_len);
+      }
+      // =====================================================================
       
       if (metric != "nw" && metric != "sw" && std::abs(lens[i] - lens[k]) > maxd) continue;
       
@@ -309,6 +324,11 @@ DataFrame fast_edge_list(CharacterVector seqs,
         double fd = (double)d;
         if (normalize == "maxlen") fd /= max_l;
         else if (normalize == "length") fd /= ((lens[i]+lens[k])/2.0);
+        
+        if (thresh < 1.0 && normalize != "none" && fd > thresh) {
+          continue;  // Skip edges that exceed normalized threshold
+        }
+        // =====================================================================
         
         loc_f.push_back(lbl[i]);
         loc_t.push_back(lbl[k]);

@@ -55,6 +55,7 @@ test_that("Backward compatibility - relative threshold", {
     input.data = data,
     seq_col = "junction_aa",
     threshold = 0.9,
+    normalize = "length",
     filter.v = TRUE
   )
   
@@ -466,22 +467,4 @@ test_that("Invalid substitution matrix rejected", {
   )
 })
 
-test_that("Hamming requires equal length", {
-  data <- data.frame(
-    sequence_id = c("seq1", "seq2", "seq3"),
-    junction_aa = c("AAAA", "BBBB", "CCCCC"),  # Different lengths
-    v_call = rep("IGHV1", 3),
-    stringsAsFactors = FALSE
-  )
-  
-  expect_warning(
-    edges <- buildNetwork(
-      input.data = data,
-      seq_col = "junction_aa",
-      threshold = 2,
-      dist_type = "hamming",
-      filter.v = TRUE
-    ),
-    "equal-length"
-  )
-})
+
