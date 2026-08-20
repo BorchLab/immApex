@@ -120,17 +120,23 @@ calculateProperty <- function(input.sequences,
 }
 
 .aa.property.matrix <- function(key) {
-  
+
   if (exists(key, envir = .builtin_scales, inherits = FALSE))
-    return(.builtin_scales[[key]])
-  
+    return(.builtin_scales[[key]][, amino.acids, drop = FALSE])
+
   has_peptides <- requireNamespace("Peptides", quietly = TRUE)
-  
+
   if (has_peptides) {
-    acc <- utils::getFromNamespace("AAdata", "Peptides")  
+    acc <- utils::getFromNamespace("AAdata", "Peptides")
     if (key %in% names(acc)) {
       v <- do.call(rbind, acc[[key]])
-      return(v)
+      # Columns of `v` come from Peptides::AAdata in whatever order that
+      # scale's author originally stored it (e.g. alphabetical for MSWHIM/
+      # ProtFP), NOT necessarily the canonical `amino.acids` order every
+      # caller (sequenceEncoder/sequenceDecoder's C++ backend, indexed
+      # purely positionally) assumes. Reorder here, once, so every caller
+      # of this helper gets canonical order by construction.
+      return(v[, amino.acids, drop = FALSE])
     }
   }
   

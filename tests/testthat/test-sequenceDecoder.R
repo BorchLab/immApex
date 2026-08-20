@@ -87,6 +87,25 @@ test_that(".propertyDecoder decodes standard sequences correctly", {
   )
 })
 
+test_that(".propertyDecoder assigns amino-acid identity correctly (regression)", {
+  skip_if_not_installed("Peptides")
+
+  # Built directly from Peptides' own ground-truth values, NOT via
+  # sequenceEncoder() -- a pure encode+decode round trip through immApex's
+  # own (formerly buggy) functions self-cancels this exact bug, since both
+  # sides would apply the same wrong order. This is the decoder counterpart
+  # to test-sequenceEncoder.R's "property mode assigns amino-acid identity
+  # correctly" regression test: .propertyDecoder used
+  # sequence.dictionary[which.min(distances)] against .aa.property.matrix()'s
+  # unreordered columns, so it could silently call the wrong amino acid.
+  true_R <- unname(Peptides::mswhimScores("R")[[1]])
+  cube <- array(true_R, dim = c(3, 1, 1))
+
+  decoded <- sequenceDecoder(cube, mode = "property", property.set = "MSWHIM",
+                             call.threshold = 0.01)
+  expect_equal(decoded, "R")
+})
+
 test_that(".propertyDecoder handles padding and thresholds", {
   sequences <- c("CA", "R")
   encoded <- sequenceEncoder(sequences, 

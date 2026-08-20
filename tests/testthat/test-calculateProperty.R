@@ -76,6 +76,24 @@ test_that("custom property matrix input works", {
   expect_equal(rownames(res), c("S1", "S2"))
 })
 
+test_that(".aa.property.matrix always returns canonical amino-acid column order", {
+  skip_if_not_installed("Peptides")
+
+  # Regression test: sequenceEncoder()/sequenceDecoder() assume column i of
+  # this helper's output IS canonical-order amino acid i, positionally (see
+  # sequenceEncoder.R's roxygen contract). Peptides::AAdata stores some
+  # scales in a different order (MSWHIM/ProtFP: alphabetical; crucianiProperties:
+  # E/Q swapped), so this helper must always reorder before returning -- not
+  # rely on each caller to do it (calculateProperty() used to be the only one
+  # that did).
+  peptides_sets <- c("crucianiProperties", "FASGAI", "kideraFactors", "MSWHIM",
+                     "ProtFP", "stScales", "tScales", "VHSE", "zScales")
+  for (key in peptides_sets) {
+    expect_equal(colnames(.aa.property.matrix(key)), amino.acids, info = key)
+  }
+  expect_equal(colnames(.aa.property.matrix("atchleyFactors")), amino.acids)
+})
+
 #  ── Error handling ───────────────────────────────────────────────
 
 test_that("invalid inputs trigger errors", {

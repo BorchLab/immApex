@@ -1,3 +1,8 @@
+# immApex VERSION 1.7.2
+
+## BUG FIXES
+* Fixed `sequenceEncoder()` and `sequenceDecoder()` property mode silently mismatching amino-acid identity to property values for `crucianiProperties`, `MSWHIM`, and `ProtFP`. These property sets' column order in `Peptides::AAdata` is not already canonical (MSWHIM/ProtFP are stored alphabetically; crucianiProperties has an isolated E/Q swap), and `.aa.property.matrix()` was returning that raw storage order instead of reordering to match the canonical amino-acid order its callers assume positionally. For example, encoding "R" under MSWHIM silently returned Cysteine's values. `.aa.property.matrix()` now always returns canonical-AA-ordered columns, matching `calculateProperty()`'s existing contract and the documented `sequenceEncoder()`/`sequenceDecoder()` interface. Verified against `Peptides`' own independent public scoring functions (`mswhimScores()`, `crucianiProperties()`, `protFP()`).
+
 # immApex VERSION 1.7.1
 
 ## PERFORMANCE

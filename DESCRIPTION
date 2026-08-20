@@ -1,6 +1,6 @@
 Package: immApex
 Title: Tools for Adaptive Immune Receptor Sequence-Based Machine and Deep Learning
-Version: 1.7.1
+Version: 1.7.2
 Authors@R: c(
     person(given = "Nick", family = "Borcherding", role = c("aut", "cre", "cph"), email = "ncborch@gmail.com"),
 	person(given = "Qile", family = "Yang", role = "ctb", email = "qile.yang@berkeley.edu", comment = c(ORCID = "0009-0005-0148-2499")))
