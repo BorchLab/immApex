@@ -26,8 +26,11 @@ This is typically inferred if `encoded.object` is a list from `sequenceEncoder`.
 names (e.g., `"atchleyFactors"`) that were used for the original encoding.
 See `?sequenceEncoder`. This is ignored if `property.matrix` is supplied.}
 
-\item{property.matrix}{For `mode = "property"`, the exact numeric matrix
-(with dimensions `20 x P`) that was used for encoding. This overrides
+\item{property.matrix}{For `mode = "property"`, the numeric matrix of the
+`P` property scales used for encoding, with dimensions `P x 20`: one row
+per property and one column per entry of `sequence.dictionary`, in that
+order. Note this is the transpose of `sequenceEncoder()`'s
+`property.matrix` argument, which is `20 x P`. This overrides
 `property.set`.}
 
 \item{call.threshold}{A numeric confidence threshold for making a call.
