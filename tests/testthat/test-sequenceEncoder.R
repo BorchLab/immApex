@@ -83,6 +83,27 @@ test_that("property mode assigns amino-acid identity correctly (regression)", {
   check_single_residue("Q", "crucianiProperties", Peptides::crucianiProperties)
 })
 
+test_that("property mode honours a non-default sequence.dictionary", {
+  skip_if_not_installed("Peptides")
+
+  # The C++ backend indexes property-matrix rows positionally against
+  # `alphabet`. Before this was fixed, `property.set` was always aligned to
+  # canonical `amino.acids`, so any other dictionary paired each residue with
+  # a different residue's values -- with no error raised.
+  dict <- rev(amino.acids)
+  enc <- sequenceEncoder("R", mode = "property", property.set = "MSWHIM",
+                         max.length = 1, sequence.dictionary = dict,
+                         verbose = FALSE)$flattened
+  expect_equal(as.numeric(enc[1, ]),
+               unname(Peptides::mswhimScores("R")[[1]]), tolerance = 1e-8)
+
+  expect_error(
+    sequenceEncoder("R", mode = "property", property.set = "MSWHIM",
+                    max.length = 1, sequence.dictionary = c(amino.acids, "X"),
+                    verbose = FALSE),
+    "no values for")
+})
+
 test_that("geometric encoding returns correct shape and content", {
   
   seqs <- c("CARDRST", "YYYGMD", "ACACACAC")

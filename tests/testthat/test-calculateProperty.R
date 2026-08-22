@@ -94,6 +94,34 @@ test_that(".aa.property.matrix always returns canonical amino-acid column order"
   expect_equal(colnames(.aa.property.matrix("atchleyFactors")), amino.acids)
 })
 
+test_that(".aa.property.matrix aligns columns to a custom sequence.dictionary", {
+  skip_if_not_installed("Peptides")
+
+  # The 20 canonical residues in a non-canonical order: alignment must follow
+  # the dictionary, not silently fall back to `amino.acids`.
+  dict <- rev(amino.acids)
+  m <- .aa.property.matrix("MSWHIM", dict)
+  expect_identical(colnames(m), dict)
+  expect_equal(unname(m[, "R"]), unname(Peptides::mswhimScores("R")[[1]]))
+
+  # A restricted alphabet is a legitimate subset, not an error.
+  expect_identical(colnames(.aa.property.matrix("MSWHIM", c("A", "C", "R"))),
+                   c("A", "C", "R"))
+
+  # A residue the scale has no values for must fail loudly, naming the residue.
+  expect_error(.aa.property.matrix("MSWHIM", c("A", "X", "Z")), "X, Z")
+
+  # `pK` lives in Peptides::AAdata but covers only 9 residues; it used to fall
+  # through as a silently wrong 9-column matrix.
+  expect_error(.aa.property.matrix("pK"), "no values for")
+})
+
+test_that("built-in scales are stored in canonical amino-acid order", {
+  # Guards the single-definition/collation arrangement of `amino.acids`:
+  # `.builtin_scales` builds its dimnames from it at load time.
+  expect_identical(colnames(.builtin_scales$atchleyFactors), amino.acids)
+})
+
 #  ── Error handling ───────────────────────────────────────────────
 
 test_that("invalid inputs trigger errors", {

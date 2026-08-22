@@ -106,6 +106,20 @@ test_that(".propertyDecoder assigns amino-acid identity correctly (regression)",
   expect_equal(decoded, "R")
 })
 
+test_that(".propertyDecoder honours a non-default sequence.dictionary", {
+  skip_if_not_installed("Peptides")
+
+  # Counterpart to the encoder test: .propertyDecoder() calls the residue via
+  # `sequence.dictionary[which.min(distances)]`, so the property matrix has to
+  # be aligned to that dictionary rather than to canonical `amino.acids`.
+  dict <- rev(amino.acids)
+  cube <- array(unname(Peptides::mswhimScores("R")[[1]]), dim = c(3, 1, 1))
+  expect_equal(
+    sequenceDecoder(cube, mode = "property", property.set = "MSWHIM",
+                    sequence.dictionary = dict, call.threshold = 0.01),
+    "R")
+})
+
 test_that(".propertyDecoder handles padding and thresholds", {
   sequences <- c("CA", "R")
   encoded <- sequenceEncoder(sequences, 

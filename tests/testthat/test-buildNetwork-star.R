@@ -11,13 +11,23 @@ test_that("star expansion preserves connected components and vertex set", {
 
   # Each connected component as a sorted vertex-set signature; the set of these
   # signatures is the partition, compared order-independently.
+  # NOTE: the integer component IDs igraph assigns are arbitrary labels that
+  # depend on edge row order, and buildNetwork()'s row order is not stable
+  # between expand modes (OpenMP merge order). vapply() carries those IDs
+  # through as names, so they must be dropped -- otherwise expect_identical()
+  # compares the labels, not the partition, and fails whenever clique and star
+  # happen to number the same components differently. Vertex names are sorted
+  # with method = "radix" for the same reason .bn_canon() does: byte order, so
+  # the signature does not depend on LC_COLLATE.
   component_sets <- function(edge_df) {
     if (nrow(edge_df) == 0) return(character(0))
     g <- igraph::graph_from_data_frame(edge_df[, c("from", "to")], directed = FALSE)
     memb <- igraph::membership(igraph::components(g, mode = "weak"))
     groups <- split(names(memb), as.integer(memb))
-    sort(vapply(groups, function(v) paste(sort(v), collapse = "\031"), character(1)),
-         method = "radix")
+    sigs <- vapply(groups,
+                   function(v) paste(sort(v, method = "radix"), collapse = "\031"),
+                   character(1), USE.NAMES = FALSE)
+    sort(sigs, method = "radix")
   }
 
   cfgs <- list(
@@ -37,8 +47,8 @@ test_that("star expansion preserves connected components and vertex set", {
     e_star   <- suppressMessages(do.call(buildNetwork, c(base_args, list(expand = "star"))))
 
     # vertex sets identical
-    v_clique <- sort(unique(c(e_clique$from, e_clique$to)))
-    v_star   <- sort(unique(c(e_star$from, e_star$to)))
+    v_clique <- sort(unique(c(e_clique$from, e_clique$to)), method = "radix")
+    v_star   <- sort(unique(c(e_star$from, e_star$to)), method = "radix")
     expect_identical(v_star, v_clique,
                      info = paste(cfg$data, "| vertex set"))
 
