@@ -11,8 +11,11 @@
 #' @param property.set For `mode = "property"`, a character vector of property
 #'   names (e.g., `"atchleyFactors"`) that were used for the original encoding.
 #'   See `?sequenceEncoder`. This is ignored if `property.matrix` is supplied.
-#' @param property.matrix For `mode = "property"`, the exact numeric matrix
-#'   (with dimensions `20 x P`) that was used for encoding. This overrides
+#' @param property.matrix For `mode = "property"`, the numeric matrix of the
+#'   `P` property scales used for encoding, with dimensions `P x 20`: one row
+#'   per property and one column per entry of `sequence.dictionary`, in that
+#'   order. Note this is the transpose of `sequenceEncoder()`'s
+#'   `property.matrix` argument, which is `20 x P`. This overrides
 #'   `property.set`.
 #' @param call.threshold A numeric confidence threshold for making a call.
 #'   - In `"onehot"` mode, this is the minimum required value in the vector (e.g., `0.9`).
@@ -80,7 +83,7 @@ sequenceDecoder <- function(encoded.object,
       if (!is.null(property.matrix)) {
         depth <- nrow(property.matrix)
       } else if (!is.null(property.set)) {
-        depth <- nrow(.aa.property.matrix(property.set))
+        depth <- nrow(.aa.property.matrix(property.set, sequence.dictionary))
       } else {
         stop("For flattened matrix input in 'property' mode, supply 'property.set' or 'property.matrix'.")
       }
@@ -107,10 +110,14 @@ sequenceDecoder <- function(encoded.object,
       if (is.null(property.set)) {
         stop("In 'property' mode, you must supply either 'property.set' or 'property.matrix'.")
       }
-      property.matrix <- .aa.property.matrix(property.set)
+      # Aligned to `sequence.dictionary` for the same reason as in
+      # sequenceEncoder(): .propertyDecoder() calls the residue by taking
+      # `sequence.dictionary[which.min(distances)]`, so column i of this
+      # matrix must be dictionary residue i.
+      property.matrix <- .aa.property.matrix(property.set, sequence.dictionary)
     }
     if (ncol(property.matrix) != length(sequence.dictionary)) {
-      stop("Rows in 'property.matrix' must match the length of 'sequence.dictionary'.")
+      stop("Columns in 'property.matrix' must match the length of 'sequence.dictionary'.")
     }
     decoded_sequences <- .propertyDecoder(cube, property.matrix, sequence.dictionary, padding.symbol, call.threshold)
   }
