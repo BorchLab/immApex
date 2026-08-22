@@ -1,11 +1,5 @@
 `%||%` <- function(x, y) if (is.null(x)) y else x   # tiny helper
 
-#' Standard 20 amino acids
-#'
-#' Vector of one-letter codes for the 20 standard amino acids.
-#' @export
-amino.acids <- c("A", "R", "N", "D", "C", "Q", "E", "G", "H", "I", "L", "K", "M", "F", "P", "S", "T", "W", "Y", "V")
-
 "%!in%" <- Negate("%in%")
 
 # Hoist helper function from the original geometricEncoder.R

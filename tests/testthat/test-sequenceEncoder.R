@@ -57,6 +57,53 @@ test_that("property encoding with explicit matrix works and returns summary", {
   expect_equal(res$flattened, res.w$flattened)
 })
 
+test_that("property mode assigns amino-acid identity correctly (regression)", {
+  skip_if_not_installed("Peptides")
+
+  # sequenceEncoder() must assign each amino acid ITS OWN property values --
+  # not some other amino acid's, mismatched via positional row order. Checked
+  # against Peptides' own independent public scoring functions (not
+  # immApex/calculateProperty() internals), so this doesn't just re-check
+  # immApex against itself. Regression test for a bug where
+  # crucianiProperties/MSWHIM/ProtFP (whose column order in Peptides::AAdata
+  # is not already canonical) were passed through unreordered -- e.g.
+  # querying "R" under MSWHIM silently returned Cysteine's values.
+  check_single_residue <- function(aa, property.set, truth.fun) {
+    enc <- sequenceEncoder(aa, mode = "property", property.set = property.set,
+                           max.length = 1, verbose = FALSE)$flattened
+    truth <- truth.fun(aa)[[1]]
+    expect_equal(as.numeric(enc[1, paste0(names(truth), "_1")]), unname(truth),
+                tolerance = 1e-8, info = paste(property.set, aa))
+  }
+
+  check_single_residue("R", "MSWHIM", Peptides::mswhimScores)
+  check_single_residue("R", "ProtFP", Peptides::protFP)
+  # crucianiProperties' bug was an isolated E/Q swap -- check both explicitly
+  check_single_residue("E", "crucianiProperties", Peptides::crucianiProperties)
+  check_single_residue("Q", "crucianiProperties", Peptides::crucianiProperties)
+})
+
+test_that("property mode honours a non-default sequence.dictionary", {
+  skip_if_not_installed("Peptides")
+
+  # The C++ backend indexes property-matrix rows positionally against
+  # `alphabet`. Before this was fixed, `property.set` was always aligned to
+  # canonical `amino.acids`, so any other dictionary paired each residue with
+  # a different residue's values -- with no error raised.
+  dict <- rev(amino.acids)
+  enc <- sequenceEncoder("R", mode = "property", property.set = "MSWHIM",
+                         max.length = 1, sequence.dictionary = dict,
+                         verbose = FALSE)$flattened
+  expect_equal(as.numeric(enc[1, ]),
+               unname(Peptides::mswhimScores("R")[[1]]), tolerance = 1e-8)
+
+  expect_error(
+    sequenceEncoder("R", mode = "property", property.set = "MSWHIM",
+                    max.length = 1, sequence.dictionary = c(amino.acids, "X"),
+                    verbose = FALSE),
+    "no values for")
+})
+
 test_that("geometric encoding returns correct shape and content", {
   
   seqs <- c("CARDRST", "YYYGMD", "ACACACAC")

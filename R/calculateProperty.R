@@ -68,6 +68,8 @@ calculateProperty <- function(input.sequences,
     stop("'property.set' must be a recognised name or a numeric matrix.")
   }
   
+  # `.aa.property.matrix()` already returns canonical order; this only has to
+  # re-order a user-supplied `property.set` matrix.
   S <- S[ , amino.acids, drop = FALSE]                 # enforce AA order
   k <- nrow(S)
   
@@ -119,18 +121,49 @@ calculateProperty <- function(input.sequences,
   Summ
 }
 
-.aa.property.matrix <- function(key) {
-  
+# Align a property scale's columns to `sequence.dictionary`, by name.
+#
+# Every consumer of a property matrix (calculateProperty()'s matrix product,
+# sequenceEncoder()/sequenceDecoder()'s C++ backend) indexes its columns
+# *positionally* against the alphabet, so column i must BE alphabet residue i.
+# Doing that lookup by name here is what makes that contract hold, rather than
+# trusting whatever order the scale happened to be stored in.
+.align.property.columns <- function(v, sequence.dictionary, key) {
+  cn <- colnames(v)
+  if (is.null(cn))
+    stop("Property set '", key, "' has no column names, so it cannot be ",
+         "aligned to 'sequence.dictionary'.", call. = FALSE)
+
+  unknown <- setdiff(sequence.dictionary, cn)
+  if (length(unknown))
+    stop("Property set '", key, "' has no values for the following ",
+         "'sequence.dictionary' entries: ",
+         paste(unknown, collapse = ", "),
+         ". Built-in property scales cover only the 20 canonical amino acids; ",
+         "supply 'property.matrix' directly to use a different alphabet.",
+         call. = FALSE)
+
+  v[, sequence.dictionary, drop = FALSE]
+}
+
+.aa.property.matrix <- function(key, sequence.dictionary = amino.acids) {
+
   if (exists(key, envir = .builtin_scales, inherits = FALSE))
-    return(.builtin_scales[[key]])
-  
+    return(.align.property.columns(.builtin_scales[[key]], sequence.dictionary, key))
+
   has_peptides <- requireNamespace("Peptides", quietly = TRUE)
-  
+
   if (has_peptides) {
-    acc <- utils::getFromNamespace("AAdata", "Peptides")  
+    acc <- utils::getFromNamespace("AAdata", "Peptides")
     if (key %in% names(acc)) {
       v <- do.call(rbind, acc[[key]])
-      return(v)
+      # Columns of `v` come from Peptides::AAdata in whatever order that
+      # scale's author originally stored it (e.g. alphabetical for MSWHIM/
+      # ProtFP), NOT necessarily the canonical `amino.acids` order every
+      # caller (sequenceEncoder/sequenceDecoder's C++ backend, indexed
+      # purely positionally) assumes. Reorder here, once, so every caller
+      # of this helper gets canonical order by construction.
+      return(.align.property.columns(v, sequence.dictionary, key))
     }
   }
   
@@ -145,7 +178,6 @@ calculateProperty <- function(input.sequences,
 }
 
 .builtin_scales <- new.env(parent = emptyenv())
-amino.acids <- c("A", "R", "N", "D", "C", "Q", "E", "G", "H", "I", "L", "K", "M", "F", "P", "S", "T", "W", "Y", "V")
 
 .builtin_scales$atchleyFactors <- t(matrix(c(
   # A (Alanine)

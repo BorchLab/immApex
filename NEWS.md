@@ -1,3 +1,16 @@
+# immApex VERSION 1.7.2
+
+## BUG FIXES
+* Fixed `sequenceEncoder()` and `sequenceDecoder()` property mode silently mismatching amino-acid identity to property values for `crucianiProperties`, `MSWHIM`, and `ProtFP`. These property sets' column order in `Peptides::AAdata` is not already canonical (MSWHIM/ProtFP are stored alphabetically; crucianiProperties has an isolated E/Q swap), and `.aa.property.matrix()` was returning that raw storage order instead of reordering to match the canonical amino-acid order its callers assume positionally. For example, encoding "R" under MSWHIM silently returned Cysteine's values. `.aa.property.matrix()` now always returns canonical-AA-ordered columns, matching `calculateProperty()`'s existing contract and the documented `sequenceEncoder()`/`sequenceDecoder()` interface. Verified against `Peptides`' own independent public scoring functions (`mswhimScores()`, `crucianiProperties()`, `protFP()`).
+* Fixed `sequenceEncoder()` and `sequenceDecoder()` pairing residues with the wrong property values when `property.set` was combined with a non-default `sequence.dictionary`. Both aligned the property matrix to the canonical 20 amino acids regardless of the dictionary actually in use, and neither checked the two agreed. `.aa.property.matrix()` now takes the `sequence.dictionary` and aligns columns to it by name, which also supports restricted alphabets. Requesting a residue a scale has no values for is now an error naming that residue, rather than a silently wrong matrix (this also covers `"pK"`, which exists in `Peptides::AAdata` but only defines 9 residues).
+
+## DOCUMENTATION
+* Corrected `sequenceDecoder()`'s `property.matrix` documentation, which described the matrix as `20 x P`. It is `P x 20`, the transpose of `sequenceEncoder()`'s `property.matrix` argument.
+
+## UNDERLYING CHANGES
+* `amino.acids` was defined twice, in `R/utils.R` and again in `R/calculateProperty.R`. Consolidated to a single definition in `R/aaa-constants.R`, which collates before both.
+* Fixed `test-buildNetwork-star.R` comparing igraph's arbitrary component ID labels rather than the component partition itself. The IDs depend on edge row order, which is not stable between `expand = "clique"` and `expand = "star"`, so the test failed intermittently depending on merge order.
+
 # immApex VERSION 1.7.1
 
 ## PERFORMANCE

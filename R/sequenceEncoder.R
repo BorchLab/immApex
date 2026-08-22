@@ -129,7 +129,11 @@ sequenceEncoder <- function(input.sequences,
   prop_mat <- NULL
   if (mode == "property") {
     if (!is.null(property.set)) {
-      prop_mat <- t(.aa.property.matrix(property.set))
+      # Align to `sequence.dictionary`, not to the canonical 20: the C++
+      # backend indexes `prop_mat` rows positionally against `alphabet`, so a
+      # non-default dictionary would otherwise silently pair each residue with
+      # another residue's property values.
+      prop_mat <- t(.aa.property.matrix(property.set, sequence.dictionary))
     } else if (!is.null(property.matrix)) {
       if (!is.matrix(property.matrix) || !is.numeric(property.matrix) ||
           nrow(property.matrix) != length(sequence.dictionary)) {
